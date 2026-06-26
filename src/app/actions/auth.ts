@@ -22,20 +22,20 @@ export async function cadastrar(_prev: EstadoForm, form: FormData): Promise<Esta
   if (!nome || !email || senha.length < 6) {
     return { erro: "Preencha nome, e-mail e uma senha de pelo menos 6 caracteres." };
   }
-  const existe = await uma("SELECT id FROM app_user WHERE email = $1", [email]);
+  const existe = await uma("SELECT id FROM orcafacil.app_user WHERE email = $1", [email]);
   if (existe) return { erro: "Já existe uma conta com esse e-mail. Faça login." };
 
   const orgId = randomUUID();
   const userId = randomUUID();
   const senhaHash = await hashSenha(senha);
 
-  await q("INSERT INTO organization (id, nome) VALUES ($1, $2)", [orgId, empresa]);
+  await q("INSERT INTO orcafacil.organization (id, nome) VALUES ($1, $2)", [orgId, empresa]);
   await q(
-    "INSERT INTO profile (org_id, nome_comercial, responsavel) VALUES ($1, $2, $3)",
+    "INSERT INTO orcafacil.profile (org_id, nome_comercial, responsavel) VALUES ($1, $2, $3)",
     [orgId, empresa, nome]
   );
   await q(
-    "INSERT INTO app_user (id, email, senha_hash, nome, org_id) VALUES ($1, $2, $3, $4, $5)",
+    "INSERT INTO orcafacil.app_user (id, email, senha_hash, nome, org_id) VALUES ($1, $2, $3, $4, $5)",
     [userId, email, senhaHash, nome, orgId]
   );
 
@@ -48,7 +48,7 @@ export async function entrar(_prev: EstadoForm, form: FormData): Promise<EstadoF
   const senha = String(form.get("senha") || "");
   if (!email || !senha) return { erro: "Informe e-mail e senha." };
 
-  const user = await uma<LinhaUser>("SELECT * FROM app_user WHERE email = $1", [email]);
+  const user = await uma<LinhaUser>("SELECT * FROM orcafacil.app_user WHERE email = $1", [email]);
   if (!user || !(await conferirSenha(senha, user.senha_hash))) {
     return { erro: "E-mail ou senha incorretos." };
   }

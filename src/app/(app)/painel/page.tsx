@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { lerSessao } from "@/lib/auth";
 import { uma } from "@/lib/db";
 
@@ -15,11 +16,11 @@ export default async function PainelPage() {
   const orgId = sessao!.orgId;
 
   const [propostas, clientes, servicos, rec] = await Promise.all([
-    contar("SELECT count(*) AS n FROM proposal WHERE org_id = $1", orgId),
-    contar("SELECT count(*) AS n FROM client WHERE org_id = $1", orgId),
-    contar("SELECT count(*) AS n FROM service WHERE org_id = $1", orgId),
+    contar("SELECT count(*) AS n FROM orcafacil.proposal WHERE org_id = $1", orgId),
+    contar("SELECT count(*) AS n FROM orcafacil.client WHERE org_id = $1", orgId),
+    contar("SELECT count(*) AS n FROM orcafacil.service WHERE org_id = $1", orgId),
     uma<{ s: string | null }>(
-      "SELECT coalesce(sum(p.valor),0) AS s FROM payment p JOIN proposal pr ON pr.id = p.proposal_id WHERE pr.org_id = $1",
+      "SELECT coalesce(sum(p.valor),0) AS s FROM orcafacil.payment p JOIN orcafacil.proposal pr ON pr.id = p.proposal_id WHERE pr.org_id = $1",
       [orgId]
     ),
   ]);
@@ -56,8 +57,10 @@ export default async function PainelPage() {
             computador com o mesmo login. Nos próximos passos vamos ativar a criação de orçamentos por
             texto, a geração de propostas em PDF, a página do cliente e o assistente do WhatsApp.
           </p>
-          <div className="mt-4 inline-flex rounded-xl bg-marca-clara px-3 py-2 text-sm font-medium text-marca-esc">
-            Esta é a primeira parte da Fase 1: conta, login e base na nuvem.
+          <div className="mt-4">
+            <Link href="/propostas/novo" className="btn btn-primario">
+              + Criar meu primeiro orçamento
+            </Link>
           </div>
         </div>
       </div>

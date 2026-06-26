@@ -13,6 +13,8 @@ function getPool(): Pool {
     connectionString,
     ssl: precisaSsl ? { rejectUnauthorized: false } : undefined,
     max: 5,
+    // Usa o schema próprio do Orça Fácil (isola de outros projetos no mesmo banco).
+    options: "-c search_path=orcafacil,public",
   });
   globalForDb.pgPool = pool;
   return pool;

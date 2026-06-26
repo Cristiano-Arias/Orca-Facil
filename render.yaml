@@ -1,22 +1,20 @@
-# Blueprint do Render — cria o app + o banco automaticamente.
-# No Render: New > Blueprint > aponte para este repositório.
+# Blueprint do Render — cria SÓ o app (reaproveita um banco que você já tem).
+# O plano gratuito do Render permite apenas 1 banco; por isso não criamos outro.
+# Ao aplicar o blueprint, o Render vai PEDIR o valor de DATABASE_URL:
+# cole ali a "Internal Database URL" do seu banco já existente.
+# O Orça Fácil guarda seus dados num schema próprio ("orcafacil"),
+# sem conflitar com outros projetos no mesmo banco.
 services:
   - type: web
     name: orca-facil
     runtime: node
     plan: free
     buildCommand: npm install && npm run build
-    startCommand: npm run db:deploy && npm start
+    startCommand: npm start
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: orca-facil-db
-          property: connectionString
+        sync: false
       - key: AUTH_SECRET
         generateValue: true
       - key: NODE_VERSION
         value: "22"
-
-databases:
-  - name: orca-facil-db
-    plan: free
