@@ -95,9 +95,12 @@ export async function criarProposta(
 ): Promise<ResultadoCriacao> {
   const avisos: string[] = [];
 
-  const qtd = c.qtd ?? (c.total && c.preco ? n2(c.total / c.preco) : 1);
-  const preco = c.preco ?? (c.total && qtd ? n2(c.total / qtd) : 0);
-  const custo = c.custo ?? 0;
+  // Number(...) defensivo: garante que nada vá como texto para colunas numéricas.
+  const cTotal = c.total != null ? Number(c.total) : undefined;
+  const cPreco = c.preco != null ? Number(c.preco) : undefined;
+  const qtd = Number(c.qtd ?? (cTotal && cPreco ? n2(cTotal / cPreco) : 1)) || 1;
+  const preco = Number(cPreco ?? (cTotal && qtd ? n2(cTotal / qtd) : 0)) || 0;
+  const custo = Number(c.custo ?? 0) || 0;
   const garantia = c.garantia ?? "";
 
   const cli = await acharOuCriarCliente(orgId, c.cliente!, c.telefone);
@@ -109,7 +112,9 @@ export async function criarProposta(
   }
 
   const numero = await proximoNumero(orgId);
-  const desconto = c.descontoPct ? n2(qtd * preco * (c.descontoPct / 100)) : 0;
+  const descontoPct = c.descontoPct != null ? Number(c.descontoPct) : 0;
+  const desconto = descontoPct ? n2(qtd * preco * (descontoPct / 100)) : 0;
+  const validadeDias = c.validadeDias != null ? Math.round(Number(c.validadeDias)) || validadePadrao : validadePadrao;
   const proposalId = randomUUID();
 
   await q(
@@ -125,7 +130,7 @@ export async function criarProposta(
       c.prazo ?? null,
       c.pagamento ?? null,
       garantia || null,
-      c.validadeDias ?? validadePadrao,
+      validadeDias,
       desconto,
     ]
   );

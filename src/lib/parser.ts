@@ -103,7 +103,7 @@ export function extrairCampos(texto: string, conhecidos: ServicoConhecido[] = []
   const out: CamposExtraidos = {};
 
   let m = t.match(
-    /(?:para|pra|pro|cliente|sr\.?|sra\.?|dona|seu)\s+(?:o |a |dona |sr\.? |sra\.? )?([A-ZÀ-Ú][\wÀ-ú]+(?:\s+[A-ZÀ-Ú][\wÀ-ú]+){0,2})/
+    /(?:[Pp]ara|[Pp]ra|[Pp]ro|[Cc]liente|[Ss]r\.?|[Ss]ra\.?|[Dd]ona|[Ss]eu)\s+(?:[oa] |[Dd]ona |[Ss]r\.? |[Ss]ra\.? )?([A-ZÀ-Ú][\wÀ-ú]+(?:\s+[A-ZÀ-Ú][\wÀ-ú]+){0,2})/
   );
   if (m) out.cliente = m[1].trim();
 
@@ -165,6 +165,36 @@ export function extrairCampos(texto: string, conhecidos: ServicoConhecido[] = []
   if (out.preco == null && out.total != null && out.qtd) out.preco = Math.round((out.total / out.qtd) * 100) / 100;
   if (!out.qtd && out.total != null && out.preco) out.qtd = Math.round((out.total / out.preco) * 100) / 100;
 
+  return out;
+}
+
+// Converte um valor (número ou texto como "R$ 2.240,50") para número, ou undefined.
+export function paraNumero(v: unknown): number | undefined {
+  if (v == null) return undefined;
+  if (typeof v === "number") return Number.isFinite(v) ? v : undefined;
+  let s = String(v).trim().replace(/[^\d.,-]/g, "");
+  if (!s) return undefined;
+  // formato BR: "2.240,50" -> "2240.50"; "28,50" -> "28.50"; "1.200" -> "1200"
+  if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+  else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+// Garante que os campos numéricos sejam números de verdade (importante para os
+// dados vindos da IA, que podem chegar como texto e quebrar o banco).
+export function sanitizar(c: CamposExtraidos): CamposExtraidos {
+  const out: CamposExtraidos = { ...c };
+  for (const k of ["qtd", "preco", "custo", "total", "descontoPct", "validadeDias"] as const) {
+    if (c[k] !== undefined) {
+      const n = paraNumero(c[k]);
+      if (n === undefined) delete out[k];
+      else (out[k] as number) = k === "validadeDias" ? Math.round(n) : n;
+    }
+  }
+  for (const k of ["cliente", "telefone", "servico", "unidade", "prazo", "pagamento", "garantia"] as const) {
+    if (out[k] != null) out[k] = String(out[k]).trim() as any;
+  }
   return out;
 }
 
