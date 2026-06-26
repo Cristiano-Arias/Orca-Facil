@@ -23,7 +23,13 @@ export type CamposExtraidos = {
   garantia?: string;
   validadeDias?: number;
   descontoPct?: number;
+  obs?: string;
 };
+
+const STOPWORDS = new Set([
+  "de", "da", "do", "dos", "das", "no", "na", "nos", "nas", "o", "a", "os", "as",
+  "um", "uma", "em", "com", "que", "e", "para", "pra", "ao",
+]);
 
 function normaliza(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -96,8 +102,12 @@ function detectarServico(t: string, conhecidos: ServicoConhecido[]): ServicoDete
     );
   if (gen) {
     const bruto = gen[1].trim();
-    const nome = bruto.charAt(0).toUpperCase() + bruto.slice(1);
-    return { nome, unidade: "un", preco: null, custo: null, garantia: "" };
+    const primeira = normaliza(bruto).split(" ")[0];
+    // evita capturar palavras vazias ("de", "uma"...) como nome de serviço
+    if (bruto.length > 2 && !STOPWORDS.has(primeira)) {
+      const nome = bruto.charAt(0).toUpperCase() + bruto.slice(1);
+      return { nome, unidade: "un", preco: null, custo: null, garantia: "" };
+    }
   }
   return null;
 }
@@ -149,15 +159,22 @@ export function extrairCampos(texto: string, conhecidos: ServicoConhecido[] = []
     if (m) out.prazo = m[1];
   }
 
-  if (/pix/.test(n)) out.pagamento = "Pix";
-  m = t.match(/(\d{1,3}%\s*(?:de\s*)?entrada[^,.;]*)/i);
-  if (m) out.pagamento = m[1].trim();
-  else if (/a\s*vista|à\s*vista/.test(n)) out.pagamento = out.pagamento ? out.pagamento + " à vista" : "À vista";
+  // pagamento — captura a cláusula inteira "pagamento ..." (preserva detalhes como
+  // "em até 6x ou pix com 5% de desconto"); senão usa as pistas soltas.
+  m = t.match(/pagamento\s*:?\s*(?:em\s+|de\s+|via\s+)?([^.;\n]*(?:vezes?|x\b|entrega|entrada|pix|cart[aã]o|boleto|desconto|%|à vista|a vista)[^.;\n]*)/i);
+  if (m) out.pagamento = m[1].replace(/\s*,\s*observa[çc].*$/i, "").trim();
+  else if (/(\d{1,3}%\s*(?:de\s*)?entrada[^,.;]*)/i.test(t)) out.pagamento = t.match(/(\d{1,3}%\s*(?:de\s*)?entrada[^,.;]*)/i)![1].trim();
+  else if (/pix/.test(n)) out.pagamento = "Pix";
+  else if (/a\s*vista|à\s*vista/.test(n)) out.pagamento = "À vista";
   else if (/parcel/.test(n)) {
     const mm = t.match(/(\d+)\s*x/);
     out.pagamento = "Parcelado" + (mm ? " em " + mm[1] + "x" : "");
-  } else if (/cart[aã]o/.test(n)) out.pagamento = out.pagamento || "Cartão";
-  else if (/boleto/.test(n)) out.pagamento = out.pagamento || "Boleto";
+  } else if (/cart[aã]o/.test(n)) out.pagamento = "Cartão";
+  else if (/boleto/.test(n)) out.pagamento = "Boleto";
+
+  // observação / observações: guarda o texto livre para aparecer na proposta
+  m = t.match(/(?:observa[^:\n]{0,15}|obs)\s*:\s*(.+)$/is);
+  if (m) out.obs = m[1].trim().replace(/\s+/g, " ");
 
   m = n.match(/garantia\s*(?:de\s*)?(\d+\s*(?:dias?|meses?|anos?|ano))/);
   if (m) out.garantia = m[1];
@@ -208,7 +225,7 @@ export function sanitizar(c: CamposExtraidos): CamposExtraidos {
       else (out[k] as number) = k === "validadeDias" ? Math.round(n) : n;
     }
   }
-  for (const k of ["cliente", "telefone", "servico", "unidade", "prazo", "pagamento", "garantia"] as const) {
+  for (const k of ["cliente", "telefone", "servico", "unidade", "prazo", "pagamento", "garantia", "obs"] as const) {
     if (out[k] != null) out[k] = String(out[k]).trim() as any;
   }
   return out;

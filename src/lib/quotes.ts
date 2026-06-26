@@ -119,8 +119,8 @@ export async function criarProposta(
 
   await q(
     `INSERT INTO orcafacil.proposal
-      (id, org_id, numero, client_id, servico_base, status, prazo, pagamento, garantia, validade_dias, desconto)
-     VALUES ($1,$2,$3,$4,$5,'RASCUNHO',$6,$7,$8,$9,$10)`,
+      (id, org_id, numero, client_id, servico_base, status, prazo, pagamento, garantia, validade_dias, desconto, obs)
+     VALUES ($1,$2,$3,$4,$5,'RASCUNHO',$6,$7,$8,$9,$10,$11)`,
     [
       proposalId,
       orgId,
@@ -132,6 +132,7 @@ export async function criarProposta(
       garantia || null,
       validadeDias,
       desconto,
+      c.obs ?? null,
     ]
   );
   await q(
