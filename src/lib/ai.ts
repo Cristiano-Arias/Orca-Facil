@@ -7,11 +7,17 @@ const MODELO = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001";
 
 const INSTRUCAO = `Você extrai dados de orçamentos de serviços a partir de uma mensagem em português.
 Responda APENAS com um JSON válido (sem texto extra) com as chaves possíveis:
-cliente (string), telefone (string), servico (string), unidade (string),
-qtd (número), preco (número, valor unitário), total (número, valor total),
-prazo (string), pagamento (string), garantia (string), validadeDias (número),
-descontoPct (número). Inclua somente as chaves que conseguir identificar.
-Valores monetários em número (ex: 2240.5). Não invente dados.`;
+cliente (string, nome do cliente), telefone (string),
+servico (string, nome curto e claro do serviço — ex: "Aplicação de botox"),
+unidade (string), qtd (número), preco (número, valor unitário),
+total (número, valor total), prazo (string), pagamento (string, condição completa
+de pagamento, preservando detalhes), garantia (string), validadeDias (número),
+descontoPct (número), obs (string com observações e detalhes adicionais do
+serviço: local, descrição detalhada, condições especiais, retoque etc.).
+Inclua somente as chaves que conseguir identificar. Coloque qualquer texto
+descritivo que não caiba nos outros campos dentro de "obs".
+Valores monetários em número (ex: 1200.5, sem "R$" nem pontos de milhar).
+Não invente dados.`;
 
 export async function extrairComIA(texto: string): Promise<CamposExtraidos | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
