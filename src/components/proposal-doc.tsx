@@ -151,7 +151,7 @@ export default function ProposalDoc({
 
       <div className="border-t border-slate-100 bg-slate-50 px-7 py-4 text-center text-xs text-slate-500">
         {nome} · {perfil.telefone || ""}
-        {perfil.pix ? ` · Pix: ${perfil.pix}` : ""} — Proposta gerada pelo Orça Fácil
+        {perfil.pix ? ` · Pix: ${perfil.pix}` : ""} — Proposta gerada pelo OrçaChat
       </div>
     </div>
   );

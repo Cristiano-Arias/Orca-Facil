@@ -46,7 +46,7 @@ export default function NovoOrcamentoForm() {
 
       <div className="mt-4 flex items-center justify-between gap-3">
         <span className="text-xs text-tinta-suave">
-          O Orça Fácil entende cliente, serviço, valores e condições — e cria os cadastros sozinho.
+          O OrçaChat entende cliente, serviço, valores e condições — e cria os cadastros sozinho.
         </span>
         <Botao />
       </div>

@@ -1,4 +1,4 @@
--- Orça Fácil — estrutura do banco (idempotente).
+-- OrçaChat — estrutura do banco (idempotente).
 -- Multi-tenant: todo dado pertence a uma organization.
 -- As tabelas ficam num schema próprio ("orcafacil") para conviver, sem conflito,
 -- com outros projetos que compartilhem o mesmo banco PostgreSQL.
@@ -32,11 +32,13 @@ CREATE TABLE IF NOT EXISTS orcafacil.profile (
   logo_data_url   TEXT,
   validade_padrao INT NOT NULL DEFAULT 7,
   modelo          TEXT NOT NULL DEFAULT 'profissional',
-  cor             TEXT NOT NULL DEFAULT '#4f46e5'
+  cor             TEXT NOT NULL DEFAULT '#4f46e5',
+  whatsapp        TEXT
 );
 
--- garante a coluna de cor em bancos já existentes (idempotente)
+-- colunas adicionadas em bancos já existentes (idempotente)
 ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS cor TEXT NOT NULL DEFAULT '#4f46e5';
+ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS whatsapp TEXT;
 
 CREATE TABLE IF NOT EXISTS orcafacil.client (
   id          TEXT PRIMARY KEY,

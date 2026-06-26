@@ -7,6 +7,19 @@ function norm(s: string) {
 }
 const n2 = (x: number) => Math.round(x * 100) / 100;
 
+// Encontra a organização dona de um número de WhatsApp (match tolerante).
+export async function orgPorWhatsapp(senderDigits: string): Promise<{ orgId: string } | null> {
+  const rows = await q<{ org_id: string; whatsapp: string | null }>(
+    "SELECT org_id, whatsapp FROM orcafacil.profile WHERE whatsapp IS NOT NULL AND whatsapp <> ''"
+  );
+  const alvo = senderDigits.slice(-8);
+  for (const r of rows) {
+    const w = (r.whatsapp || "").replace(/\D/g, "");
+    if (w && w.slice(-8) === alvo) return { orgId: r.org_id };
+  }
+  return null;
+}
+
 export async function servicosDaOrg(orgId: string): Promise<ServicoConhecido[]> {
   const rows = await q<any>(
     "SELECT nome, unidade, preco_padrao, custo_padrao, garantia_padrao FROM orcafacil.service WHERE org_id = $1",

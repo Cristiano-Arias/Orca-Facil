@@ -3,9 +3,9 @@ import "./globals.css";
 import RegistrarSW from "@/components/registrar-sw";
 
 export const metadata: Metadata = {
-  title: "Orça Fácil — Orçamentos pelo WhatsApp",
+  title: "OrçaChat — Orçamentos pelo WhatsApp",
   description: "Crie orçamentos e propostas profissionais a partir do WhatsApp.",
-  appleWebApp: { capable: true, title: "Orça Fácil", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "OrçaChat", statusBarStyle: "default" },
   icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
 };
 

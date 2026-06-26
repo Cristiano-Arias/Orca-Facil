@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Orça Fácil",
-    short_name: "Orça Fácil",
+    name: "OrçaChat",
+    short_name: "OrçaChat",
     description: "Orçamentos e propostas profissionais pelo WhatsApp.",
     start_url: "/",
     display: "standalone",

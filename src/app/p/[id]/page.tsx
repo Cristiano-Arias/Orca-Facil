@@ -79,7 +79,7 @@ export default async function PaginaCliente({ params }: { params: { id: string }
           )}
         </div>
 
-        <p className="mt-4 text-center text-xs text-tinta-suave">Proposta gerada pelo Orça Fácil</p>
+        <p className="mt-4 text-center text-xs text-tinta-suave">Proposta gerada pelo OrçaChat</p>
       </div>
     </main>
   );

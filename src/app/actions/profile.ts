@@ -22,9 +22,9 @@ export async function salvarPerfil(_prev: EstadoPerfil, form: FormData): Promise
   await q(
     `UPDATE orcafacil.profile SET
        nome_comercial = $1, responsavel = $2, telefone = $3, email = $4,
-       documento = $5, endereco = $6, pix = $7, validade_padrao = $8, cor = $9
-     WHERE org_id = $10`,
-    [s("nome_comercial"), s("responsavel"), s("telefone"), s("email"), s("documento"), s("endereco"), s("pix"), validade, cor, sessao.orgId]
+       documento = $5, endereco = $6, pix = $7, validade_padrao = $8, cor = $9, whatsapp = $10
+     WHERE org_id = $11`,
+    [s("nome_comercial"), s("responsavel"), s("telefone"), s("email"), s("documento"), s("endereco"), s("pix"), validade, cor, s("whatsapp"), sessao.orgId]
   );
 
   // logo: só atualiza se enviaram um novo (data URL) ou pediram para remover

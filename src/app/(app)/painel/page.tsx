@@ -51,7 +51,7 @@ export default async function PainelPage() {
         </div>
 
         <div className="card p-6">
-          <h3 className="text-lg font-semibold text-tinta">Bem-vindo ao Orça Fácil 👋</h3>
+          <h3 className="text-lg font-semibold text-tinta">Bem-vindo ao OrçaChat 👋</h3>
           <p className="mt-2 max-w-prose text-sm leading-relaxed text-tinta-suave">
             Sua conta está pronta e seus dados ficam salvos na nuvem — acessíveis pelo celular e pelo
             computador com o mesmo login. Nos próximos passos vamos ativar a criação de orçamentos por

@@ -32,7 +32,7 @@ export default function AppShell({ nome, children }: { nome: string; children: R
         </button>
         <div className="flex items-center gap-2">
           <div className="grid h-7 w-7 place-items-center rounded-md bg-marca font-display text-base font-bold">O</div>
-          <span className="font-display text-lg font-semibold">Orça Fácil</span>
+          <span className="font-display text-lg font-semibold">OrçaChat</span>
         </div>
       </header>
 
@@ -53,7 +53,7 @@ export default function AppShell({ nome, children }: { nome: string; children: R
               O
             </div>
             <div>
-              <div className="font-display text-lg font-semibold leading-none text-white">Orça Fácil</div>
+              <div className="font-display text-lg font-semibold leading-none text-white">OrçaChat</div>
               <div className="text-[10px] uppercase tracking-wider text-indigo-300">Pelo WhatsApp</div>
             </div>
           </div>

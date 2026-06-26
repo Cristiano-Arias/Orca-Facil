@@ -16,6 +16,7 @@ export type PerfilDados = {
   validade_padrao?: number | null;
   logo_data_url?: string | null;
   cor?: string | null;
+  whatsapp?: string | null;
 };
 
 function Botao() {
@@ -153,6 +154,22 @@ export default function PerfilForm({ perfil }: { perfil: PerfilDados }) {
             Cor personalizada ({cor})
           </label>
           <input type="hidden" name="cor" value={cor} />
+        </div>
+
+        {/* WhatsApp do profissional */}
+        <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <label className="mb-1 block text-sm font-semibold text-emerald-900">
+            📱 Seu WhatsApp (para criar orçamentos por mensagem)
+          </label>
+          <input
+            name="whatsapp"
+            defaultValue={perfil.whatsapp ?? ""}
+            placeholder="Ex.: (85) 99789-1302"
+            className="w-full rounded-xl border border-emerald-300 bg-white px-3 py-2.5 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          />
+          <p className="mt-1 text-xs text-emerald-800">
+            É o número de onde você vai mandar mensagens para o OrçaChat criar os orçamentos.
+          </p>
         </div>
 
         {/* Dados */}

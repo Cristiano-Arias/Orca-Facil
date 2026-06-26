@@ -24,7 +24,7 @@ export default function AuthForm({ modo }: { modo: "entrar" | "cadastrar" }) {
           O
         </div>
         <div>
-          <div className="font-display text-2xl font-semibold leading-none text-tinta">Orça Fácil</div>
+          <div className="font-display text-2xl font-semibold leading-none text-tinta">OrçaChat</div>
           <div className="text-xs uppercase tracking-wider text-tinta-suave">Orçamentos pelo WhatsApp</div>
         </div>
       </div>
