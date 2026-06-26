@@ -38,6 +38,7 @@ export async function enviarWhatsApp(para: string, texto: string): Promise<boole
       console.error("Falha ao enviar WhatsApp:", resp.status, await resp.text().catch(() => ""));
       return false;
     }
+    console.log(`[whatsapp] mensagem enviada para ${soDigitos(para)}`);
     return true;
   } catch (e) {
     console.error("Erro ao enviar WhatsApp:", e);

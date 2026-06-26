@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+    console.log(`[whatsapp] recebido callback — ${mensagens.length} mensagem(ns):`, JSON.stringify(mensagens));
     // processa em sequência (normalmente 1 mensagem por callback)
     for (const msg of mensagens) {
       await processar(msg.from, msg.texto);
@@ -57,6 +58,7 @@ async function processar(from: string, texto: string) {
   const sender = soDigitos(from);
   const org = await orgPorWhatsapp(sender);
   const url = baseUrl();
+  console.log(`[whatsapp] de=${sender} org=${org ? org.orgId : "NÃO ENCONTRADA"}`);
 
   if (!org) {
     await enviarWhatsApp(
@@ -87,6 +89,7 @@ async function processar(from: string, texto: string) {
   const campos = sanitizar(ia ? { ...base, ...limparObj(ia) } : base);
 
   const falta = camposFaltando(campos);
+  console.log(`[whatsapp] campos=${JSON.stringify(campos)} falta=${JSON.stringify(falta)}`);
   if (falta.length > 0) {
     await enviarWhatsApp(
       from,
@@ -111,7 +114,8 @@ async function processar(from: string, texto: string) {
     resp += `Total: *${brl(Number(total) || 0)}*\n\n`;
     resp += `📄 Link para o cliente:\n${url}/p/${proposalId}\n\n`;
     resp += `✏️ Ver/editar:\n${url}/propostas/${proposalId}`;
-    await enviarWhatsApp(from, resp);
+    const enviado = await enviarWhatsApp(from, resp);
+    console.log(`[whatsapp] proposta ${numero} criada (${proposalId}); resposta enviada=${enviado}`);
   } catch (e) {
     console.error("Erro ao criar orçamento via WhatsApp:", e);
     await enviarWhatsApp(from, "Tive um problema para salvar o orçamento agora. Pode tentar de novo em instantes? 🙏");
