@@ -33,6 +33,9 @@ export default async function PropostaDetalhe({ params }: { params: { id: string
           </h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Link href={`/propostas/${params.id}/editar`} className="btn btn-sec">
+            ✏️ Editar
+          </Link>
           <CopiarLink url={linkCliente} />
           <BotaoImprimir />
         </div>
