@@ -6,7 +6,7 @@ export default async function PerfilPage() {
   const sessao = await lerSessao();
   const perfil =
     (await uma<PerfilDados>(
-      "SELECT nome_comercial, responsavel, telefone, email, documento, endereco, pix, validade_padrao, logo_data_url FROM orcafacil.profile WHERE org_id = $1",
+      "SELECT nome_comercial, responsavel, telefone, email, documento, endereco, pix, validade_padrao, logo_data_url, cor FROM orcafacil.profile WHERE org_id = $1",
       [sessao!.orgId]
     )) ?? {};
 

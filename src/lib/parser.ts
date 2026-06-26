@@ -88,6 +88,17 @@ function detectarServico(t: string, conhecidos: ServicoConhecido[]): ServicoDete
       };
     }
   }
+  // 3) extração genérica: "serviço de X", "aplicação de X", "instalação de X"...
+  const gen =
+    t.match(/servi[çc]os?\s+de\s+([A-Za-zÀ-ú][\wÀ-ú]+(?:\s+[A-Za-zÀ-ú][\wÀ-ú]+){0,2})/i) ||
+    t.match(
+      /(?:aplica[çc][aã]o|instala[çc][aã]o|troca|conserto|reparo|manuten[çc][aã]o|montagem|corte|limpeza|pintura|reforma|revis[aã]o)\s+(?:de\s+|do\s+|da\s+|dos\s+|das\s+)?([A-Za-zÀ-ú][\wÀ-ú]+(?:\s+[A-Za-zÀ-ú][\wÀ-ú]+){0,2})/i
+    );
+  if (gen) {
+    const bruto = gen[1].trim();
+    const nome = bruto.charAt(0).toUpperCase() + bruto.slice(1);
+    return { nome, unidade: "un", preco: null, custo: null, garantia: "" };
+  }
   return null;
 }
 
@@ -121,8 +132,13 @@ export function extrairCampos(texto: string, conhecidos: ServicoConhecido[] = []
   m = t.match(/r?\$?\s*([\d.]+(?:,\d{1,2})?)\s*(?:reais\s*)?(?:\/|por\b|cada\b|o metro|a unidade)/i);
   if (m) out.preco = parseFloat(m[1].replace(/\./g, "").replace(",", "."));
 
-  m = t.match(/(?:valor total|total|fica em|fica por|sai por)\D{0,6}r?\$?\s*([\d.]+(?:,\d{1,2})?)/i);
+  m = t.match(/(?:valor total|total|valor de|valor:|valor\s+r\$|fica em|fica por|sai por|cobro|fica)\D{0,6}r?\$?\s*([\d.]+(?:,\d{1,2})?)/i);
   if (m) out.total = parseFloat(m[1].replace(/\./g, "").replace(",", "."));
+  // fallback: se não achou preço unitário nem total, pega o primeiro valor em R$
+  if (out.preco == null && out.total == null) {
+    m = t.match(/r\$\s*([\d.]+(?:,\d{1,2})?)/i);
+    if (m) out.total = parseFloat(m[1].replace(/\./g, "").replace(",", "."));
+  }
 
   m = n.match(/prazo\s*(?:de\s*)?(\d+\s*(?:dias?|semanas?|meses?|horas?))/);
   if (m) out.prazo = m[1];

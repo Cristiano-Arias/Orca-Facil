@@ -1,4 +1,4 @@
-import { brl, brData } from "@/lib/proposal-format";
+import { brl, brData, gradienteMarca, textoSobre, corValida } from "@/lib/proposal-format";
 
 export type DocPerfil = {
   nome_comercial?: string | null;
@@ -8,6 +8,7 @@ export type DocPerfil = {
   documento?: string | null;
   pix?: string | null;
   logo_data_url?: string | null;
+  cor?: string | null;
 };
 export type DocProposta = {
   numero: string;
@@ -40,10 +41,15 @@ export default function ProposalDoc({
   venc.setDate(venc.getDate() + (proposta.validade_dias || 7));
   const nome = perfil.nome_comercial || "Profissional";
   const inicial = (nome || "O").trim().charAt(0).toUpperCase();
+  const cor = corValida(perfil.cor);
+  const txtHead = textoSobre(cor);
 
   return (
     <div className="mx-auto max-w-2xl overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 print:shadow-none print:ring-0">
-      <div className="flex items-start justify-between bg-gradient-to-r from-marca to-indigo-500 px-7 py-6 text-white">
+      <div
+        className="flex items-start justify-between px-7 py-6"
+        style={{ background: gradienteMarca(cor), color: txtHead, WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
+      >
         <div className="flex items-center gap-3">
           <div className="grid h-14 w-14 place-items-center overflow-hidden rounded-xl bg-white/20 font-display text-2xl font-bold">
             {perfil.logo_data_url ? (
@@ -116,9 +122,14 @@ export default function ProposalDoc({
                 <span className="tabular-nums">− {brl(proposta.desconto)}</span>
               </div>
             )}
-            <div className="mt-1 flex justify-between border-t-2 border-slate-800 pt-2 font-display text-lg font-bold">
+            <div
+              className="mt-1 flex justify-between border-t-2 pt-2 font-display text-lg font-bold"
+              style={{ borderColor: cor }}
+            >
               <span>Total</span>
-              <span className="tabular-nums">{brl(total)}</span>
+              <span className="tabular-nums" style={{ color: cor }}>
+                {brl(total)}
+              </span>
             </div>
           </div>
         </div>

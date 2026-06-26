@@ -38,6 +38,50 @@ export function brData(d: string | Date | null | undefined): string {
   return dt.toLocaleDateString("pt-BR");
 }
 
+// ---------- cores da marca ----------
+export const COR_PADRAO = "#4f46e5";
+
+export const PALETA: { nome: string; cor: string }[] = [
+  { nome: "Índigo", cor: "#4f46e5" },
+  { nome: "Azul", cor: "#2563eb" },
+  { nome: "Esmeralda", cor: "#059669" },
+  { nome: "Petróleo", cor: "#0f766e" },
+  { nome: "Vinho", cor: "#9d174d" },
+  { nome: "Coral", cor: "#e11d48" },
+  { nome: "Laranja", cor: "#ea580c" },
+  { nome: "Roxo", cor: "#7c3aed" },
+  { nome: "Grafite", cor: "#334155" },
+  { nome: "Preto", cor: "#111827" },
+];
+
+export function corValida(c: string | null | undefined): string {
+  return typeof c === "string" && /^#[0-9a-fA-F]{6}$/.test(c) ? c : COR_PADRAO;
+}
+
+function hexParaRgb(hex: string): [number, number, number] {
+  const h = corValida(hex).slice(1);
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+function rgbParaHex(r: number, g: number, b: number): string {
+  const c = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+  return "#" + c(r) + c(g) + c(b);
+}
+// clareia a cor misturando com branco (amt 0..1)
+export function clarear(hex: string, amt: number): string {
+  const [r, g, b] = hexParaRgb(hex);
+  return rgbParaHex(r + (255 - r) * amt, g + (255 - g) * amt, b + (255 - b) * amt);
+}
+// retorna a melhor cor de texto (branco ou escuro) para contraste sobre `hex`
+export function textoSobre(hex: string): string {
+  const [r, g, b] = hexParaRgb(hex);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.62 ? "#0f172a" : "#ffffff";
+}
+// gradiente do cabeçalho da proposta a partir da cor da marca
+export function gradienteMarca(hex: string): string {
+  return `linear-gradient(120deg, ${corValida(hex)}, ${clarear(hex, 0.18)})`;
+}
+
 export type Item = { descricao: string; qtd: number; unidade: string; preco: number; custo: number };
 
 export function subtotal(itens: Item[]): number {

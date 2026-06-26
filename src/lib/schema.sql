@@ -31,8 +31,12 @@ CREATE TABLE IF NOT EXISTS orcafacil.profile (
   pix             TEXT,
   logo_data_url   TEXT,
   validade_padrao INT NOT NULL DEFAULT 7,
-  modelo          TEXT NOT NULL DEFAULT 'profissional'
+  modelo          TEXT NOT NULL DEFAULT 'profissional',
+  cor             TEXT NOT NULL DEFAULT '#4f46e5'
 );
+
+-- garante a coluna de cor em bancos já existentes (idempotente)
+ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS cor TEXT NOT NULL DEFAULT '#4f46e5';
 
 CREATE TABLE IF NOT EXISTS orcafacil.client (
   id          TEXT PRIMARY KEY,
