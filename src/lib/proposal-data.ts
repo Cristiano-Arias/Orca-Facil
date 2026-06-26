@@ -11,7 +11,7 @@ export type PropostaCompleta = {
 // Carrega uma proposta completa. Se orgId for informado, garante que pertence à conta.
 export async function carregarProposta(id: string, orgId?: string): Promise<PropostaCompleta | null> {
   const pr = await uma<any>(
-    `SELECT id, org_id, numero, status, prazo, pagamento, garantia, validade_dias, desconto, emitido_em, obs, client_id
+    `SELECT id, org_id, numero, status, prazo, pagamento, garantia, validade_dias, desconto, emitido_em, obs, nota_cliente, client_id
        FROM orcafacil.proposal WHERE id = $1`,
     [id]
   );

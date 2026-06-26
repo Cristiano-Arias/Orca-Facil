@@ -74,10 +74,14 @@ CREATE TABLE IF NOT EXISTS orcafacil.proposal (
   validade_dias INT NOT NULL DEFAULT 7,
   desconto      DOUBLE PRECISION NOT NULL DEFAULT 0,
   obs           TEXT,
+  nota_cliente  TEXT,
   emitido_em    TIMESTAMPTZ NOT NULL DEFAULT now(),
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (org_id, numero)
 );
+
+-- garante a coluna de nota do cliente em bancos já existentes (idempotente)
+ALTER TABLE orcafacil.proposal ADD COLUMN IF NOT EXISTS nota_cliente TEXT;
 
 CREATE TABLE IF NOT EXISTS orcafacil.proposal_item (
   id          TEXT PRIMARY KEY,

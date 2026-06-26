@@ -25,6 +25,7 @@ export async function mudarStatus(formData: FormData) {
 export async function responderCliente(formData: FormData) {
   const id = String(formData.get("id") || "");
   const acao = String(formData.get("acao") || "");
+  const nota = String(formData.get("nota") || "").trim().slice(0, 1000);
   const mapa: Record<string, string> = {
     aprovar: "APROVADA",
     recusar: "RECUSADA",
@@ -32,9 +33,17 @@ export async function responderCliente(formData: FormData) {
   };
   const status = mapa[acao];
   if (!status) return;
-  // só avança se a proposta ainda não foi finalizada
   const pr = await uma<{ status: string }>("SELECT status FROM orcafacil.proposal WHERE id = $1", [id]);
   if (!pr) return;
-  await q("UPDATE orcafacil.proposal SET status = $1 WHERE id = $2", [status, id]);
+  if (acao === "ajuste") {
+    await q("UPDATE orcafacil.proposal SET status = $1, nota_cliente = $2 WHERE id = $3", [
+      status,
+      nota || "Cliente solicitou ajuste (sem detalhes).",
+      id,
+    ]);
+  } else {
+    await q("UPDATE orcafacil.proposal SET status = $1 WHERE id = $2", [status, id]);
+  }
   revalidatePath(`/p/${id}`);
+  revalidatePath(`/propostas/${id}`);
 }

@@ -12,35 +12,44 @@ export default async function PaginaCliente({ params }: { params: { id: string }
   const dados = await carregarProposta(params.id);
   if (!dados) notFound();
 
-  const respondida = FINALIZADAS.includes(dados.proposta.status);
+  const status = dados.proposta.status;
+  const respondida = FINALIZADAS.includes(status) || status === "NEGOCIACAO";
   const tel = (dados.perfil.telefone || "").replace(/\D/g, "");
   const zap = tel ? `https://wa.me/55${tel}` : null;
+
+  const mensagemResposta: Record<string, string> = {
+    APROVADA: "Proposta aprovada — obrigado! 🎉 O profissional já foi avisado.",
+    RECUSADA: "Você recusou esta proposta. Obrigado pelo retorno.",
+    NEGOCIACAO: "Recebemos seu pedido de ajuste. O profissional vai te retornar em breve. 👍",
+    CONVERTIDA: "Proposta aprovada e em execução. 🎉",
+    PAGA: "Proposta paga. Obrigado!",
+    PAGA_PARCIAL: "Pagamento parcial registrado. Obrigado!",
+    CANCELADA: "Esta proposta foi cancelada.",
+  };
 
   return (
     <main className="min-h-screen bg-[var(--bg)] px-4 py-8">
       <div className="mx-auto max-w-2xl">
         <ProposalDoc perfil={dados.perfil} proposta={dados.proposta} cliente={dados.cliente} itens={dados.itens} />
 
-        <div className="mt-5 rounded-2xl bg-slate-900 p-5 text-center text-white">
+        <div className="mt-5 rounded-2xl bg-slate-900 p-5 text-white">
           {respondida ? (
-            <div className="text-sm">
-              Status atual desta proposta:{" "}
-              <b className="font-semibold">{ST_LABEL[dados.proposta.status] ?? dados.proposta.status}</b>
-              {dados.proposta.status === "APROVADA" && " — obrigado! 🎉"}
+            <div className="text-center">
+              <div className="text-sm">{mensagemResposta[status] ?? `Status: ${ST_LABEL[status] ?? status}`}</div>
+              {zap && (
+                <a href={zap} target="_blank" rel="noreferrer" className="btn bg-zap mt-3 text-emerald-950">
+                  Falar no WhatsApp
+                </a>
+              )}
             </div>
           ) : (
             <>
-              <div className="mb-3 text-sm opacity-90">O que você gostaria de fazer com esta proposta?</div>
-              <div className="flex flex-wrap items-center justify-center gap-2">
+              <div className="mb-3 text-center text-sm opacity-90">O que você gostaria de fazer com esta proposta?</div>
+              <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
                 <form action={responderCliente}>
                   <input type="hidden" name="id" value={params.id} />
                   <input type="hidden" name="acao" value="aprovar" />
                   <button className="btn bg-verde text-white hover:brightness-110">✓ Aprovar proposta</button>
-                </form>
-                <form action={responderCliente}>
-                  <input type="hidden" name="id" value={params.id} />
-                  <input type="hidden" name="acao" value="ajuste" />
-                  <button className="btn btn-sec">Solicitar ajuste</button>
                 </form>
                 <form action={responderCliente}>
                   <input type="hidden" name="id" value={params.id} />
@@ -53,6 +62,19 @@ export default async function PaginaCliente({ params }: { params: { id: string }
                   </a>
                 )}
               </div>
+
+              <form action={responderCliente} className="rounded-xl bg-white/10 p-3">
+                <input type="hidden" name="id" value={params.id} />
+                <input type="hidden" name="acao" value="ajuste" />
+                <div className="mb-2 text-sm font-medium">Quer pedir um ajuste? Conte o que mudar:</div>
+                <textarea
+                  name="nota"
+                  rows={2}
+                  placeholder="Ex.: pode fazer por R$ 1.100? Ou mudar o prazo para sexta?"
+                  className="w-full rounded-lg border-0 px-3 py-2 text-sm text-tinta outline-none"
+                />
+                <button className="btn btn-sec mt-2 w-full">Solicitar ajuste</button>
+              </form>
             </>
           )}
         </div>

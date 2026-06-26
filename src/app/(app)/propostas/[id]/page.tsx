@@ -39,6 +39,11 @@ export default async function PropostaDetalhe({ params }: { params: { id: string
       </header>
 
       <div className="max-w-3xl px-7 py-6">
+        {(dados.proposta as any).nota_cliente && dados.proposta.status === "NEGOCIACAO" && (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
+            <b>✋ O cliente pediu um ajuste:</b> {(dados.proposta as any).nota_cliente}
+          </div>
+        )}
         <ProposalDoc perfil={dados.perfil} proposta={dados.proposta} cliente={dados.cliente} itens={dados.itens} />
 
         <form action={mudarStatus} className="mt-5 flex items-center gap-2 print:hidden">
