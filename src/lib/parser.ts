@@ -24,6 +24,15 @@ export type CamposExtraidos = {
   validadeDias?: number;
   descontoPct?: number;
   obs?: string;
+  itens?: ItemExtraido[];
+};
+
+export type ItemExtraido = {
+  descricao: string;
+  qtd?: number;
+  unidade?: string;
+  preco?: number;
+  total?: number;
 };
 
 const STOPWORDS = new Set([
@@ -228,14 +237,38 @@ export function sanitizar(c: CamposExtraidos): CamposExtraidos {
   for (const k of ["cliente", "telefone", "servico", "unidade", "prazo", "pagamento", "garantia", "obs"] as const) {
     if (out[k] != null) out[k] = String(out[k]).trim() as any;
   }
+  // sanitiza a lista de itens (números de verdade), descartando os sem descrição
+  if (Array.isArray(c.itens)) {
+    out.itens = c.itens
+      .map((it) => {
+        const i: ItemExtraido = { descricao: String(it?.descricao ?? "").trim() };
+        const qtd = paraNumero(it?.qtd);
+        const preco = paraNumero(it?.preco);
+        const total = paraNumero(it?.total);
+        if (qtd !== undefined) i.qtd = qtd;
+        if (preco !== undefined) i.preco = preco;
+        if (total !== undefined) i.total = total;
+        if (it?.unidade) i.unidade = String(it.unidade).trim();
+        return i;
+      })
+      .filter((i) => i.descricao);
+    if (out.itens.length === 0) delete out.itens;
+  }
   return out;
 }
 
 // Lista o que ainda falta para fechar um orçamento.
 export function camposFaltando(c: CamposExtraidos): string[] {
+  const temItens = Array.isArray(c.itens) && c.itens.length > 0;
   const falta: string[] = [];
-  if (!c.servico) falta.push("serviço");
   if (!c.cliente) falta.push("cliente");
+  if (temItens) {
+    // com lista de itens, exige pelo menos um valor por item
+    const semValor = c.itens!.some((i) => i.preco == null && i.total == null);
+    if (semValor) falta.push("valor de algum item");
+    return falta;
+  }
+  if (!c.servico) falta.push("serviço");
   if (!c.qtd && !c.total) falta.push("quantidade");
   if (c.preco == null && c.total == null) falta.push("valor");
   return falta;

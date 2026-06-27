@@ -108,16 +108,43 @@ async function processar(from: string, texto: string) {
       "SELECT validade_padrao FROM orcafacil.profile WHERE org_id = $1",
       [org.orgId]
     );
-    const { proposalId, numero, avisos } = await criarProposta(org.orgId, campos, perfil?.validade_padrao ?? 7);
+    const { proposalId, numero, avisos, itens, subtotal, desconto, total } = await criarProposta(
+      org.orgId,
+      campos,
+      perfil?.validade_padrao ?? 7
+    );
 
-    const itensTot = (campos.qtd ?? 1) * (campos.preco ?? 0);
-    const total = campos.total ?? itensTot;
+    // formata a quantidade sem casas decimais desnecessárias (2 em vez de 2,00)
+    const fmtQtd = (n: number) => (Number.isInteger(n) ? String(n) : n.toLocaleString("pt-BR"));
+
     let resp = avisos.length ? avisos.join("\n") + "\n\n" : "";
     resp += `✅ Orçamento *${numero}* criado!\n`;
-    if (campos.cliente) resp += `Cliente: ${campos.cliente}\n`;
-    if (campos.servico) resp += `Serviço: ${campos.servico}\n`;
-    resp += `Total: *${brl(Number(total) || 0)}*\n\n`;
-    resp += `📄 Link para o cliente:\n${url}/p/${proposalId}\n\n`;
+    if (campos.cliente) resp += `👤 Cliente: ${campos.cliente}\n`;
+    resp += `\n*Itens:*\n`;
+    for (const it of itens) {
+      const totalItem = it.qtd * it.preco;
+      // "• Pintura — 80 m² × R$ 28,00 = R$ 2.240,00"  (ou só o valor quando qtd=1)
+      if (it.qtd === 1 && (it.unidade === "un" || it.unidade === "serviço")) {
+        resp += `• ${it.descricao} — ${brl(totalItem)}\n`;
+      } else {
+        resp += `• ${it.descricao} — ${fmtQtd(it.qtd)} ${it.unidade} × ${brl(it.preco)} = ${brl(totalItem)}\n`;
+      }
+    }
+    resp += `\n`;
+    if (desconto > 0) {
+      resp += `Subtotal: ${brl(subtotal)}\n`;
+      resp += `Desconto: -${brl(desconto)}\n`;
+    }
+    resp += `💰 Total: *${brl(total)}*\n`;
+
+    // condições, quando informadas
+    const cond: string[] = [];
+    if (campos.prazo) cond.push(`⏱️ Prazo: ${campos.prazo}`);
+    if (campos.pagamento) cond.push(`💳 Pagamento: ${campos.pagamento}`);
+    if (campos.garantia) cond.push(`🛡️ Garantia: ${campos.garantia}`);
+    if (cond.length) resp += `\n${cond.join("\n")}\n`;
+
+    resp += `\n📄 Link para o cliente:\n${url}/p/${proposalId}\n\n`;
     resp += `✏️ Ver/editar:\n${url}/propostas/${proposalId}`;
     const enviado = await enviarWhatsApp(from, resp);
     console.log(`[whatsapp] proposta ${numero} criada (${proposalId}); resposta enviada=${enviado}`);

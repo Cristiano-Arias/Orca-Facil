@@ -8,14 +8,16 @@ const MODELO = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001";
 const INSTRUCAO = `Você extrai dados de orçamentos de serviços a partir de uma mensagem em português.
 Responda APENAS com um JSON válido (sem texto extra) com as chaves possíveis:
 cliente (string, nome do cliente), telefone (string),
-servico (string, nome curto e claro do serviço — ex: "Aplicação de botox"),
-unidade (string), qtd (número), preco (número, valor unitário),
-total (número, valor total), prazo (string), pagamento (string, condição completa
-de pagamento, preservando detalhes), garantia (string), validadeDias (número),
-descontoPct (número), obs (string com observações e detalhes adicionais do
-serviço: local, descrição detalhada, condições especiais, retoque etc.).
-Inclua somente as chaves que conseguir identificar. Coloque qualquer texto
-descritivo que não caiba nos outros campos dentro de "obs".
+prazo (string), pagamento (string, condição completa de pagamento, preservando
+detalhes), garantia (string), validadeDias (número), descontoPct (número),
+obs (string com observações e detalhes adicionais: local, descrição detalhada,
+condições especiais, retoque etc.),
+itens (array) — UMA entrada por serviço/produto orçado, cada uma com:
+  descricao (string, nome curto e claro — ex: "Pintura de apartamento"),
+  qtd (número), unidade (string, ex: "m²", "un", "h", "serviço"),
+  preco (número, valor unitário) OU total (número, valor total do item).
+Se houver vários serviços na mensagem, inclua TODOS em "itens".
+Inclua somente as chaves que conseguir identificar.
 Valores monetários em número (ex: 1200.5, sem "R$" nem pontos de milhar).
 Não invente dados.`;
 

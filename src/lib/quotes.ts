@@ -94,11 +94,34 @@ async function proximoNumero(orgId: string): Promise<string> {
   return "ORC-" + (1001 + Number(row?.n ?? 0));
 }
 
+export type ItemFinal = { descricao: string; qtd: number; unidade: string; preco: number; custo: number };
 export type ResultadoCriacao = {
   proposalId: string;
   numero: string;
   avisos: string[];
+  itens: ItemFinal[];
+  subtotal: number;
+  desconto: number;
+  total: number;
 };
+
+// Monta a lista final de itens a partir dos campos extraídos (1 ou vários).
+function construirItens(c: CamposExtraidos): ItemFinal[] {
+  if (Array.isArray(c.itens) && c.itens.length) {
+    return c.itens.map((it) => {
+      const total = it.total != null ? Number(it.total) : undefined;
+      const precoBase = it.preco != null ? Number(it.preco) : undefined;
+      const qtd = Number(it.qtd ?? (total && precoBase ? n2(total / precoBase) : 1)) || 1;
+      const preco = Number(precoBase ?? (total ? n2(total / qtd) : 0)) || 0;
+      return { descricao: it.descricao, qtd, unidade: it.unidade || "un", preco, custo: 0 };
+    });
+  }
+  const cTotal = c.total != null ? Number(c.total) : undefined;
+  const cPreco = c.preco != null ? Number(c.preco) : undefined;
+  const qtd = Number(c.qtd ?? (cTotal && cPreco ? n2(cTotal / cPreco) : 1)) || 1;
+  const preco = Number(cPreco ?? (cTotal && qtd ? n2(cTotal / qtd) : 0)) || 0;
+  return [{ descricao: c.servico ?? "Serviço", qtd, unidade: c.unidade ?? "un", preco, custo: Number(c.custo ?? 0) || 0 }];
+}
 
 // Cria um orçamento completo a partir dos campos extraídos.
 export async function criarProposta(
@@ -107,26 +130,23 @@ export async function criarProposta(
   validadePadrao: number
 ): Promise<ResultadoCriacao> {
   const avisos: string[] = [];
-
-  // Number(...) defensivo: garante que nada vá como texto para colunas numéricas.
-  const cTotal = c.total != null ? Number(c.total) : undefined;
-  const cPreco = c.preco != null ? Number(c.preco) : undefined;
-  const qtd = Number(c.qtd ?? (cTotal && cPreco ? n2(cTotal / cPreco) : 1)) || 1;
-  const preco = Number(cPreco ?? (cTotal && qtd ? n2(cTotal / qtd) : 0)) || 0;
-  const custo = Number(c.custo ?? 0) || 0;
   const garantia = c.garantia ?? "";
+  const itens = construirItens(c);
 
   const cli = await acharOuCriarCliente(orgId, c.cliente!, c.telefone);
   if (cli.novo) avisos.push(`Criei o cadastro do cliente ${c.cliente}.`);
 
-  if (c.servico) {
-    const sv = await acharOuCriarServico(orgId, c.servico, c.unidade ?? "un", preco, custo, garantia);
-    if (sv.novo) avisos.push(`Cadastrei o serviço "${c.servico}".`);
+  // cadastra/atualiza cada serviço no catálogo
+  for (const it of itens) {
+    const sv = await acharOuCriarServico(orgId, it.descricao, it.unidade, it.preco, it.custo, garantia);
+    if (sv.novo) avisos.push(`Cadastrei o serviço "${it.descricao}".`);
   }
 
-  const numero = await proximoNumero(orgId);
+  const subtotal = n2(itens.reduce((s, i) => s + i.qtd * i.preco, 0));
   const descontoPct = c.descontoPct != null ? Number(c.descontoPct) : 0;
-  const desconto = descontoPct ? n2(qtd * preco * (descontoPct / 100)) : 0;
+  const desconto = descontoPct ? n2(subtotal * (descontoPct / 100)) : 0;
+  const total = n2(subtotal - desconto);
+  const numero = await proximoNumero(orgId);
   const validadeDias = c.validadeDias != null ? Math.round(Number(c.validadeDias)) || validadePadrao : validadePadrao;
   const proposalId = randomUUID();
 
@@ -139,7 +159,7 @@ export async function criarProposta(
       orgId,
       numero,
       cli.id,
-      c.servico ?? "Serviço",
+      itens[0].descricao,
       c.prazo ?? null,
       c.pagamento ?? null,
       garantia || null,
@@ -148,10 +168,12 @@ export async function criarProposta(
       c.obs ?? null,
     ]
   );
-  await q(
-    "INSERT INTO orcafacil.proposal_item (id, proposal_id, descricao, qtd, unidade, preco, custo) VALUES ($1,$2,$3,$4,$5,$6,$7)",
-    [randomUUID(), proposalId, c.servico ?? "Serviço", qtd, c.unidade ?? "un", preco, custo]
-  );
+  for (const it of itens) {
+    await q(
+      "INSERT INTO orcafacil.proposal_item (id, proposal_id, descricao, qtd, unidade, preco, custo) VALUES ($1,$2,$3,$4,$5,$6,$7)",
+      [randomUUID(), proposalId, it.descricao, it.qtd, it.unidade, it.preco, it.custo]
+    );
+  }
 
-  return { proposalId, numero, avisos };
+  return { proposalId, numero, avisos, itens, subtotal, desconto, total };
 }
