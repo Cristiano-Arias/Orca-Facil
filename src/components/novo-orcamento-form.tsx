@@ -14,7 +14,7 @@ function Botao() {
   const { pending } = useFormStatus();
   return (
     <button type="submit" className="btn btn-primario" disabled={pending}>
-      {pending ? "Montando…" : "Criar orçamento"}
+      {pending ? "Montando…" : "Montar para conferir"}
     </button>
   );
 }
@@ -46,7 +46,7 @@ export default function NovoOrcamentoForm() {
 
       <div className="mt-4 flex items-center justify-between gap-3">
         <span className="text-xs text-tinta-suave">
-          O OrçaChat entende cliente, serviço, valores e condições — e cria os cadastros sozinho.
+          O OrçaChat entende cliente, serviços, valores e condições — depois você confere e ajusta antes de enviar.
         </span>
         <Botao />
       </div>

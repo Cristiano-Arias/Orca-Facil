@@ -39,7 +39,7 @@ export async function extrairComIA(texto: string): Promise<CamposExtraidos | nul
         messages: [{ role: "user", content: texto }],
       }),
       // evita travar a requisição do usuário se a IA demorar demais
-      signal: AbortSignal.timeout(7000),
+      signal: AbortSignal.timeout(15000),
     });
     if (!resp.ok) return null;
     const data: any = await resp.json();

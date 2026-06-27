@@ -49,7 +49,9 @@ export async function criarOrcamento(_prev: EstadoOrcamento, form: FormData): Pr
     console.error("Falha ao criar orçamento:", e);
     return { texto, erro: "Não consegui salvar o orçamento agora. Tente novamente em instantes." };
   }
-  redirect(`/propostas/${proposalId}`);
+  // leva direto para a tela de conferência: o profissional revisa/ajusta os itens
+  // (garante que a proposta fique exatamente como ele quer antes de enviar ao cliente)
+  redirect(`/propostas/${proposalId}/editar?novo=1`);
 }
 
 // Remove chaves vazias/indefinidas vindas da IA para não sobrescrever o parser.
