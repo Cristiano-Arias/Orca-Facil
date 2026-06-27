@@ -33,12 +33,18 @@ CREATE TABLE IF NOT EXISTS orcafacil.profile (
   validade_padrao INT NOT NULL DEFAULT 7,
   modelo          TEXT NOT NULL DEFAULT 'profissional',
   cor             TEXT NOT NULL DEFAULT '#4f46e5',
-  whatsapp        TEXT
+  whatsapp        TEXT,
+  logo_fundo      TEXT NOT NULL DEFAULT 'branco',
+  logo_formato    TEXT NOT NULL DEFAULT 'quadrado',
+  logo_emoji      TEXT
 );
 
 -- colunas adicionadas em bancos já existentes (idempotente)
 ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS cor TEXT NOT NULL DEFAULT '#4f46e5';
 ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS whatsapp TEXT;
+ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS logo_fundo TEXT NOT NULL DEFAULT 'branco';
+ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS logo_formato TEXT NOT NULL DEFAULT 'quadrado';
+ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS logo_emoji TEXT;
 
 CREATE TABLE IF NOT EXISTS orcafacil.client (
   id          TEXT PRIMARY KEY,

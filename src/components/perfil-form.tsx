@@ -3,7 +3,8 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { useState } from "react";
 import { salvarPerfil, type EstadoPerfil } from "@/app/actions/profile";
-import { PALETA, COR_PADRAO, corValida, gradienteMarca, textoSobre } from "@/lib/proposal-format";
+import { PALETA, corValida, gradienteMarca, textoSobre } from "@/lib/proposal-format";
+import LogoMarca, { ICONES_SUGERIDOS } from "@/components/logo-marca";
 
 export type PerfilDados = {
   nome_comercial?: string | null;
@@ -17,6 +18,9 @@ export type PerfilDados = {
   logo_data_url?: string | null;
   cor?: string | null;
   whatsapp?: string | null;
+  logo_fundo?: string | null;
+  logo_formato?: string | null;
+  logo_emoji?: string | null;
 };
 
 function Botao() {
@@ -68,6 +72,10 @@ export default function PerfilForm({ perfil }: { perfil: PerfilDados }) {
   const [logo, setLogo] = useState<string | null>(perfil.logo_data_url ?? null);
   const [cor, setCor] = useState<string>(corValida(perfil.cor));
   const [corLogo, setCorLogo] = useState<string | null>(null);
+  const [fundo, setFundo] = useState<string>(perfil.logo_fundo === "transparente" ? "transparente" : "branco");
+  const [formato, setFormato] = useState<string>(perfil.logo_formato === "redondo" ? "redondo" : "quadrado");
+  const [emoji, setEmoji] = useState<string>(perfil.logo_emoji ?? "");
+  const temLogo = !!logo && logo !== "__remover__";
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -89,29 +97,79 @@ export default function PerfilForm({ perfil }: { perfil: PerfilDados }) {
   return (
     <form action={formAction} className="grid max-w-4xl gap-6 lg:grid-cols-[1fr_320px]">
       <div className="card p-6">
-        {/* Logo */}
-        <div className="mb-6 flex items-center gap-4">
-          <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-xl bg-marca-clara font-display text-2xl font-bold text-marca">
-            {logo && logo !== "__remover__" ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt="logo" className="h-full w-full object-cover" />
-            ) : (
-              inicial
-            )}
+        {/* Logo / marca */}
+        <div className="mb-6 rounded-xl border border-slate-200 p-4">
+          <div className="mb-3 text-sm font-semibold text-tinta">Logo / marca</div>
+
+          <div className="flex items-center gap-4">
+            {/* prévia do logo dentro de um fundo na cor da marca, como na proposta */}
+            <div className="grid place-items-center rounded-xl p-2" style={{ background: gradienteMarca(cor) }}>
+              <LogoMarca logo={logo} emoji={temLogo ? null : emoji} nome={nomePrev} cor={cor} fundo={fundo} formato={formato} size={56} />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="btn btn-sec cursor-pointer">
+                📤 Enviar logotipo
+                <input type="file" accept="image/*" className="hidden" onChange={onFile} />
+              </label>
+              {temLogo && (
+                <button type="button" className="btn btn-sec" onClick={() => { setLogo("__remover__"); setCorLogo(null); }}>
+                  Remover
+                </button>
+              )}
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="btn btn-sec cursor-pointer">
-              📤 Enviar logotipo
-              <input type="file" accept="image/*" className="hidden" onChange={onFile} />
-            </label>
-            {logo && logo !== "__remover__" && (
-              <button type="button" className="btn btn-sec" onClick={() => { setLogo("__remover__"); setCorLogo(null); }}>
-                Remover
-              </button>
-            )}
+          <input type="hidden" name="logo_data_url" value={logo ?? ""} />
+          <input type="hidden" name="logo_fundo" value={fundo} />
+          <input type="hidden" name="logo_formato" value={formato} />
+          <input type="hidden" name="logo_emoji" value={temLogo ? "" : emoji} />
+
+          {/* opções de exibição (valem para logo, ícone ou iniciais) */}
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div>
+              <div className="mb-1 text-xs font-semibold text-tinta-suave">Fundo</div>
+              <div className="flex gap-2">
+                {[["branco", "Branco"], ["transparente", "Transparente"]].map(([v, lbl]) => (
+                  <button key={v} type="button" onClick={() => setFundo(v)}
+                    className={`flex-1 rounded-lg border px-2 py-1.5 text-sm ${fundo === v ? "border-marca bg-marca-clara font-semibold text-marca" : "border-slate-300 text-tinta"}`}>
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="mb-1 text-xs font-semibold text-tinta-suave">Formato</div>
+              <div className="flex gap-2">
+                {[["quadrado", "Quadrado"], ["redondo", "Redondo"]].map(([v, lbl]) => (
+                  <button key={v} type="button" onClick={() => setFormato(v)}
+                    className={`flex-1 rounded-lg border px-2 py-1.5 text-sm ${formato === v ? "border-marca bg-marca-clara font-semibold text-marca" : "border-slate-300 text-tinta"}`}>
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
+
+          {/* sem logo enviado → sugestões de ícone por profissão */}
+          {!temLogo && (
+            <div className="mt-4">
+              <div className="mb-1 text-xs font-semibold text-tinta-suave">
+                Não tem logo? Escolha um ícone (ou use suas iniciais)
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => setEmoji("")} title="Usar iniciais"
+                  className={`grid h-10 w-10 place-items-center rounded-lg border font-display font-bold ${emoji === "" ? "border-marca bg-marca-clara text-marca" : "border-slate-300 text-tinta"}`}>
+                  {inicial}
+                </button>
+                {ICONES_SUGERIDOS.map((ic) => (
+                  <button key={ic.emoji} type="button" onClick={() => setEmoji(ic.emoji)} title={ic.rotulo}
+                    className={`grid h-10 w-10 place-items-center rounded-lg border text-xl ${emoji === ic.emoji ? "border-marca bg-marca-clara" : "border-slate-300"}`}>
+                    {ic.emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        <input type="hidden" name="logo_data_url" value={logo ?? ""} />
 
         {/* Cor da marca */}
         <div className="mb-6 rounded-xl border border-slate-200 p-4">
@@ -231,14 +289,7 @@ export default function PerfilForm({ perfil }: { perfil: PerfilDados }) {
             className="flex items-center gap-3 px-5 py-5"
             style={{ background: gradienteMarca(cor), color: textoSobre(cor) }}
           >
-            <div className="grid h-12 w-12 place-items-center overflow-hidden rounded-xl bg-white/20 font-display text-xl font-bold">
-              {logo && logo !== "__remover__" ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logo} alt="logo" className="h-full w-full object-cover" />
-              ) : (
-                inicial
-              )}
-            </div>
+            <LogoMarca logo={logo} emoji={temLogo ? null : emoji} nome={nomePrev} cor={cor} fundo={fundo} formato={formato} size={48} />
             <div>
               <div className="font-display text-base font-semibold leading-tight">{nomePrev}</div>
               <div className="text-[11px] opacity-90">PROPOSTA · ORC-1001</div>

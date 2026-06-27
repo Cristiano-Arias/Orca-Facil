@@ -18,13 +18,17 @@ export async function salvarPerfil(_prev: EstadoPerfil, form: FormData): Promise
   const validade = parseInt(String(form.get("validade_padrao") || "7")) || 7;
   const logo = String(form.get("logo_data_url") || "");
   const cor = corValida(String(form.get("cor") || ""));
+  const logoFundo = String(form.get("logo_fundo") || "branco") === "transparente" ? "transparente" : "branco";
+  const logoFormato = String(form.get("logo_formato") || "quadrado") === "redondo" ? "redondo" : "quadrado";
+  const logoEmoji = s("logo_emoji");
 
   await q(
     `UPDATE orcafacil.profile SET
        nome_comercial = $1, responsavel = $2, telefone = $3, email = $4,
-       documento = $5, endereco = $6, pix = $7, validade_padrao = $8, cor = $9, whatsapp = $10
-     WHERE org_id = $11`,
-    [s("nome_comercial"), s("responsavel"), s("telefone"), s("email"), s("documento"), s("endereco"), s("pix"), validade, cor, s("whatsapp"), sessao.orgId]
+       documento = $5, endereco = $6, pix = $7, validade_padrao = $8, cor = $9, whatsapp = $10,
+       logo_fundo = $11, logo_formato = $12, logo_emoji = $13
+     WHERE org_id = $14`,
+    [s("nome_comercial"), s("responsavel"), s("telefone"), s("email"), s("documento"), s("endereco"), s("pix"), validade, cor, s("whatsapp"), logoFundo, logoFormato, logoEmoji, sessao.orgId]
   );
 
   // logo: só atualiza se enviaram um novo (data URL) ou pediram para remover

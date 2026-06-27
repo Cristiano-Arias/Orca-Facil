@@ -1,4 +1,5 @@
 import { brl, brData, gradienteMarca, textoSobre, corValida } from "@/lib/proposal-format";
+import LogoMarca from "@/components/logo-marca";
 
 export type DocPerfil = {
   nome_comercial?: string | null;
@@ -9,6 +10,9 @@ export type DocPerfil = {
   pix?: string | null;
   logo_data_url?: string | null;
   cor?: string | null;
+  logo_fundo?: string | null;
+  logo_formato?: string | null;
+  logo_emoji?: string | null;
 };
 export type DocProposta = {
   numero: string;
@@ -40,7 +44,6 @@ export default function ProposalDoc({
   const venc = new Date(emitido);
   venc.setDate(venc.getDate() + (proposta.validade_dias || 7));
   const nome = perfil.nome_comercial || "Profissional";
-  const inicial = (nome || "O").trim().charAt(0).toUpperCase();
   const cor = corValida(perfil.cor);
   const txtHead = textoSobre(cor);
 
@@ -51,14 +54,15 @@ export default function ProposalDoc({
         style={{ background: gradienteMarca(cor), color: txtHead, WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
       >
         <div className="flex items-center gap-3">
-          <div className="grid h-14 w-14 place-items-center overflow-hidden rounded-xl bg-white/20 font-display text-2xl font-bold">
-            {perfil.logo_data_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={perfil.logo_data_url} alt="logo" className="h-full w-full object-cover" />
-            ) : (
-              inicial
-            )}
-          </div>
+          <LogoMarca
+            logo={perfil.logo_data_url}
+            emoji={perfil.logo_emoji}
+            nome={nome}
+            cor={cor}
+            fundo={perfil.logo_fundo}
+            formato={perfil.logo_formato}
+            size={56}
+          />
           <div>
             <div className="font-display text-lg font-semibold">{nome}</div>
             {perfil.responsavel && <div className="text-sm opacity-90">{perfil.responsavel}</div>}

@@ -27,7 +27,7 @@ export async function carregarProposta(id: string, orgId?: string): Promise<Prop
   );
   const perfil =
     (await uma<DocPerfil>(
-      "SELECT nome_comercial, responsavel, telefone, email, documento, pix, logo_data_url, cor FROM orcafacil.profile WHERE org_id = $1",
+      "SELECT nome_comercial, responsavel, telefone, email, documento, pix, logo_data_url, cor, logo_fundo, logo_formato, logo_emoji FROM orcafacil.profile WHERE org_id = $1",
       [pr.org_id]
     )) ?? {};
 
