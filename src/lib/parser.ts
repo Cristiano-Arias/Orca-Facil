@@ -237,6 +237,12 @@ export function extrairCampos(texto: string, conhecidos: ServicoConhecido[] = []
   const n = normaliza(texto);
   const out: CamposExtraidos = {};
 
+  // região do serviço = texto antes das condições (prazo/pagamento/...). Quantidade
+  // e valores são procurados só aqui, para "prazo 15 dias" não virar 15 de quantidade.
+  const corte = inicioCondicoes(t);
+  const tServ = t.slice(0, corte);
+  const nServ = n.slice(0, corte);
+
   let m = t.match(
     /(?:[Pp]ara|[Pp]ra|[Pp]ro|[Cc]liente|[Ss]r\.?|[Ss]ra\.?|[Dd]ona|[Ss]eu)\s+(?:[oa] |[Dd]ona |[Ss]r\.? |[Ss]ra\.? )?([A-ZÀ-Ú][\wÀ-ú]+(?:\s+[A-ZÀ-Ú][\wÀ-ú]+){0,2})/
   );
@@ -245,7 +251,7 @@ export function extrairCampos(texto: string, conhecidos: ServicoConhecido[] = []
   m = t.match(/(\(?\d{2}\)?\s?\d{4,5}-?\d{4})/);
   if (m) out.telefone = m[1];
 
-  m = n.match(
+  m = nServ.match(
     /(\d+(?:[.,]\d+)?)\s*(m2|m²|metros?\s*quadrados?|metros?|un|unidades?|pe[çc]as?|tomadas?|janelas?|portas?|luminarias?|ar-?condicionados?|splits?|horas?|dias?\b|serv)/
   );
   if (m) {
@@ -253,14 +259,14 @@ export function extrairCampos(texto: string, conhecidos: ServicoConhecido[] = []
     out.unidade = normUnidade(m[2]);
   }
 
-  m = t.match(/r?\$?\s*([\d.]+(?:,\d{1,2})?)\s*(?:reais\s*)?(?:\/|por\b|cada\b|o metro|a unidade)/i);
+  m = tServ.match(/r?\$?\s*([\d.]+(?:,\d{1,2})?)\s*(?:reais\s*)?(?:\/|por\b|cada\b|o metro|a unidade)/i);
   if (m) out.preco = parseFloat(m[1].replace(/\./g, "").replace(",", "."));
 
-  m = t.match(/(?:valor total|total|valor de|valor:|valor\s+r\$|fica em|fica por|sai por|cobro|fica)\D{0,6}r?\$?\s*([\d.]+(?:,\d{1,2})?)/i);
+  m = tServ.match(/(?:valor total|total|valor de|valor:|valor\s+r\$|fica em|fica por|sai por|cobro|fica)\D{0,6}r?\$?\s*([\d.]+(?:,\d{1,2})?)/i);
   if (m) out.total = parseFloat(m[1].replace(/\./g, "").replace(",", "."));
   // fallback: se não achou preço unitário nem total, pega o primeiro valor em R$
   if (out.preco == null && out.total == null) {
-    m = t.match(/r\$\s*([\d.]+(?:,\d{1,2})?)/i);
+    m = tServ.match(/r\$\s*([\d.]+(?:,\d{1,2})?)/i);
     if (m) out.total = parseFloat(m[1].replace(/\./g, "").replace(",", "."));
   }
 
@@ -291,6 +297,15 @@ export function extrairCampos(texto: string, conhecidos: ServicoConhecido[] = []
   // observação / observações: guarda o texto livre para aparecer na proposta
   m = t.match(/(?:observa[^:\n]{0,15}|obs)\s*:\s*(.+)$/is);
   if (m) out.obs = m[1].trim().replace(/\s+/g, " ");
+  else {
+    // sem "obs:" explícita — captura notas de escopo comuns para não perder detalhe
+    const notas: string[] = [];
+    if (/m[aã]o\s+de\s+obra/i.test(t) && /materi?al/i.test(t)) notas.push("Inclui material e mão de obra");
+    else if (/materi?al\s+inclus[oa]|com\s+materi?al/i.test(t)) notas.push("Material incluso");
+    else if (/m[aã]o\s+de\s+obra/i.test(t)) notas.push("Mão de obra inclusa");
+    if (/a\s+partir\s+da\s+aprova[çc][aã]o/i.test(t)) notas.push("Entrega a partir da aprovação do orçamento");
+    if (notas.length) out.obs = notas.join(". ");
+  }
 
   m = n.match(/garantia\s*(?:de\s*)?(\d+\s*(?:dias?|meses?|anos?|ano))/);
   if (m) out.garantia = m[1];

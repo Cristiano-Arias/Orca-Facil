@@ -10,13 +10,20 @@ Responda APENAS com um JSON válido (sem texto extra) com as chaves possíveis:
 cliente (string, nome do cliente), telefone (string),
 prazo (string), pagamento (string, condição completa de pagamento, preservando
 detalhes), garantia (string), validadeDias (número), descontoPct (número),
-obs (string com observações e detalhes adicionais: local, descrição detalhada,
-condições especiais, retoque etc.),
+obs (string),
 itens (array) — UMA entrada por serviço/produto orçado, cada uma com:
-  descricao (string, nome curto e claro — ex: "Pintura de apartamento"),
+  descricao (string, nome curto e claro — ex: "Pintura de apartamento";
+    inclua qualificadores específicos daquele item, ex: "Troca de box do banheiro
+    (material e mão de obra)"),
   qtd (número), unidade (string, ex: "m²", "un", "h", "serviço"),
   preco (número, valor unitário) OU total (número, valor total do item).
 Se houver vários serviços na mensagem, inclua TODOS em "itens".
+
+IMPORTANTE — NÃO PERCA INFORMAÇÃO: todo detalhe relevante da mensagem que NÃO
+couber nos campos acima deve ir para "obs" (ex.: escopo "material e mão de obra",
+inclusões/exclusões, local, contexto de entrega como "a partir da aprovação",
+retoque, observações gerais). Resuma esses detalhes em "obs" em vez de descartá-los.
+
 Inclua somente as chaves que conseguir identificar.
 Valores monetários em número (ex: 1200.5, sem "R$" nem pontos de milhar).
 Não invente dados.`;
