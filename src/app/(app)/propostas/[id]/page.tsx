@@ -37,7 +37,7 @@ export default async function PropostaDetalhe({ params }: { params: { id: string
             ✏️ Editar
           </Link>
           <CopiarLink url={linkCliente} />
-          <BotaoImprimir />
+          <BotaoImprimir id={params.id} />
         </div>
       </header>
 

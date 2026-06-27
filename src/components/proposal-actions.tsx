@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 
-export function BotaoImprimir() {
+export function BotaoImprimir({ id }: { id?: string }) {
+  // Com o id, abrimos o PDF gerado no servidor (o mesmo enviado no WhatsApp);
+  // sem id, cai no print do navegador.
+  if (id) {
+    return (
+      <a href={`/p/${id}/pdf`} target="_blank" rel="noreferrer" className="btn btn-sec">
+        ⬇ Baixar PDF
+      </a>
+    );
+  }
   return (
     <button type="button" onClick={() => window.print()} className="btn btn-sec">
       ⬇ Baixar PDF

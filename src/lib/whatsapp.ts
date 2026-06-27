@@ -25,7 +25,8 @@ export function mesmoNumero(a: string, b: string): boolean {
   return x.slice(-n) === y.slice(-n);
 }
 
-export async function enviarWhatsApp(para: string, texto: string): Promise<boolean> {
+// Envia uma mensagem (texto ou documento) pela API do WhatsApp Cloud.
+async function enviarPayload(para: string, payload: Record<string, unknown>): Promise<boolean> {
   const token = process.env.WHATSAPP_TOKEN;
   const phoneId = process.env.WHATSAPP_PHONE_ID;
   if (!token || !phoneId) {
@@ -39,19 +40,36 @@ export async function enviarWhatsApp(para: string, texto: string): Promise<boole
       body: JSON.stringify({
         messaging_product: "whatsapp",
         to: ajustarNumeroBR(soDigitos(para)),
-        type: "text",
-        text: { body: texto.slice(0, 4000) },
+        ...payload,
       }),
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(15000),
     });
     if (!resp.ok) {
       console.error("Falha ao enviar WhatsApp:", resp.status, await resp.text().catch(() => ""));
       return false;
     }
-    console.log(`[whatsapp] mensagem enviada para ${soDigitos(para)}`);
+    console.log(`[whatsapp] ${payload.type} enviado para ${soDigitos(para)}`);
     return true;
   } catch (e) {
     console.error("Erro ao enviar WhatsApp:", e);
     return false;
   }
+}
+
+export async function enviarWhatsApp(para: string, texto: string): Promise<boolean> {
+  return enviarPayload(para, { type: "text", text: { body: texto.slice(0, 4000) } });
+}
+
+// Envia um documento (ex.: o PDF do orçamento) na conversa do WhatsApp.
+// `link` precisa ser um endereço HTTPS público (a Meta busca o arquivo).
+export async function enviarDocumentoWhatsApp(
+  para: string,
+  link: string,
+  filename: string,
+  caption?: string
+): Promise<boolean> {
+  return enviarPayload(para, {
+    type: "document",
+    document: { link, filename, ...(caption ? { caption: caption.slice(0, 1000) } : {}) },
+  });
 }

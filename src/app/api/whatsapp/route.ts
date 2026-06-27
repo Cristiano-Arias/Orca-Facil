@@ -3,7 +3,7 @@ import { orgPorWhatsapp, servicosDaOrg, criarProposta } from "@/lib/quotes";
 import { uma } from "@/lib/db";
 import { extrairCampos, camposFaltando, sanitizar, type CamposExtraidos } from "@/lib/parser";
 import { extrairComIA } from "@/lib/ai";
-import { enviarWhatsApp, soDigitos } from "@/lib/whatsapp";
+import { enviarWhatsApp, enviarDocumentoWhatsApp, soDigitos } from "@/lib/whatsapp";
 import { brl } from "@/lib/proposal-format";
 
 export const dynamic = "force-dynamic";
@@ -147,7 +147,15 @@ async function processar(from: string, texto: string) {
     resp += `\n📄 Link para o cliente:\n${url}/p/${proposalId}\n\n`;
     resp += `✏️ Ver/editar:\n${url}/propostas/${proposalId}`;
     const enviado = await enviarWhatsApp(from, resp);
-    console.log(`[whatsapp] proposta ${numero} criada (${proposalId}); resposta enviada=${enviado}`);
+
+    // diferencial: envia o orçamento em PDF como documento na própria conversa
+    const pdf = await enviarDocumentoWhatsApp(
+      from,
+      `${url}/p/${proposalId}/pdf`,
+      `Orcamento-${numero}.pdf`,
+      `Orçamento ${numero} — pronto para encaminhar ao cliente 👆`
+    );
+    console.log(`[whatsapp] proposta ${numero} criada (${proposalId}); texto=${enviado} pdf=${pdf}`);
   } catch (e) {
     console.error("Erro ao criar orçamento via WhatsApp:", e);
     await enviarWhatsApp(from, "Tive um problema para salvar o orçamento agora. Pode tentar de novo em instantes? 🙏");
