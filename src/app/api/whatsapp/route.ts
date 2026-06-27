@@ -35,13 +35,18 @@ export async function POST(req: NextRequest) {
 
   try {
     const mensagens: any[] = [];
+    const statuses: any[] = [];
     for (const entry of body?.entry ?? []) {
       for (const change of entry?.changes ?? []) {
         for (const m of change?.value?.messages ?? []) {
           if (m?.type === "text" && m?.text?.body) mensagens.push({ from: m.from, texto: m.text.body });
         }
+        for (const s of change?.value?.statuses ?? []) {
+          statuses.push({ status: s?.status, para: s?.recipient_id, erros: s?.errors });
+        }
       }
     }
+    if (statuses.length) console.log(`[whatsapp] status de entrega:`, JSON.stringify(statuses));
     console.log(`[whatsapp] recebido callback — ${mensagens.length} mensagem(ns):`, JSON.stringify(mensagens));
     // processa em sequência (normalmente 1 mensagem por callback)
     for (const msg of mensagens) {
