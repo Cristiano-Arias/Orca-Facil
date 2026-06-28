@@ -35,6 +35,14 @@ const RECURSOS = [
 ];
 
 const PROFISSOES = [
+  "Arquitetos",
+  "Advogados",
+  "Técnicos de informática",
+  "Designers",
+  "Contadores",
+  "Consultores",
+  "Fotógrafos",
+  "Personal trainers",
   "Pintores",
   "Eletricistas",
   "Encanadores",
@@ -46,6 +54,77 @@ const PROFISSOES = [
   "Montadores",
   "Vidraceiros",
   "Serviços gerais",
+];
+
+// Como o profissional contrata e configura a ferramenta.
+const COMECAR = [
+  {
+    icone: "🧭",
+    titulo: "Escolha seu plano",
+    texto: "Comece grátis por 7 dias. Depois escolha Essencial ou Premium — sem fidelidade, cancela quando quiser.",
+  },
+  {
+    icone: "⚡",
+    titulo: "Crie sua conta",
+    texto: "Cadastro rápido, em 1 minuto e sem cartão para começar. É só e-mail e senha.",
+  },
+  {
+    icone: "🎨",
+    titulo: "Configure seu perfil",
+    texto: "Coloque seu logo, suas cores, seus dados e o seu número de WhatsApp. Tudo em uma tela só.",
+  },
+  {
+    icone: "💬",
+    titulo: "Comece a orçar",
+    texto: "Mande a primeira mensagem pelo WhatsApp e receba o orçamento em PDF, pronto para enviar.",
+  },
+];
+
+// PLANOS — preços provisórios (troque os valores de `preco` quando decidir).
+const PLANOS = [
+  {
+    nome: "Degustação",
+    preco: "Grátis",
+    periodo: "por 7 dias",
+    tagline: "Experimente sem compromisso. Ideal para conhecer o OrçaChat.",
+    destaque: false,
+    cta: "Começar grátis",
+    recursos: [
+      "Orçamentos pelo WhatsApp",
+      "PDF profissional com a sua marca",
+      "Link de aprovação para o cliente",
+      "Acesso completo por 7 dias",
+    ],
+  },
+  {
+    nome: "Essencial",
+    preco: "R$ 39",
+    periodo: "/mês",
+    tagline: "Perfeito para pequenos negócios e profissionais autônomos.",
+    destaque: true,
+    cta: "Assinar o Essencial",
+    recursos: [
+      "Tudo da Degustação, sem prazo",
+      "Orçamentos ilimitados",
+      "Vários itens por orçamento",
+      "Clientes e serviços salvos",
+      "Painel de controle",
+    ],
+  },
+  {
+    nome: "Premium",
+    preco: "R$ 79",
+    periodo: "/mês",
+    tagline: "Para quem quer crescer e organizar o negócio.",
+    destaque: false,
+    cta: "Assinar o Premium",
+    recursos: [
+      "Tudo do Essencial",
+      "Relatórios e métricas avançadas",
+      "Vários usuários na conta",
+      "Suporte prioritário",
+    ],
+  },
 ];
 
 function Logo() {
@@ -65,6 +144,9 @@ export default function Landing() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
           <Logo />
           <nav className="flex items-center gap-2 sm:gap-3">
+            <a href="#planos" className="mr-1 hidden text-sm font-semibold text-tinta-suave hover:text-marca sm:inline">
+              Planos
+            </a>
             <Link href="/entrar" className="btn btn-sec hidden sm:inline-flex">
               Entrar
             </Link>
@@ -220,13 +302,87 @@ export default function Landing() {
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-5 py-16 text-center">
           <h2 className="font-display text-3xl font-bold text-tinta sm:text-4xl">Para quem é o OrçaChat</h2>
-          <p className="mt-3 text-tinta-suave">Se você faz serviço e manda orçamento, é para você.</p>
+          <p className="mt-3 text-tinta-suave">Da obra ao escritório — se você manda orçamento, é para você.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-2.5">
             {PROFISSOES.map((p) => (
               <span key={p} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-tinta">
                 {p}
               </span>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Planos */}
+      <section id="planos" className="scroll-mt-20 border-t border-slate-100">
+        <div className="mx-auto max-w-6xl px-5 py-16">
+          <div className="text-center">
+            <h2 className="font-display text-3xl font-bold text-tinta sm:text-4xl">Planos</h2>
+            <p className="mt-3 text-tinta-suave">Comece grátis. Escolha quando quiser crescer.</p>
+          </div>
+          <div className="mt-10 grid items-stretch gap-6 md:grid-cols-3">
+            {PLANOS.map((p) => (
+              <div
+                key={p.nome}
+                className={`card relative flex flex-col p-6 ${p.destaque ? "ring-2 ring-marca shadow-lg" : ""}`}
+              >
+                {p.destaque && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-marca px-3 py-1 text-xs font-bold text-white">
+                    Mais popular
+                  </span>
+                )}
+                <h3 className="font-display text-xl font-bold text-tinta">{p.nome}</h3>
+                <div className="mt-2 flex items-end gap-1">
+                  <span className="font-display text-3xl font-bold text-tinta">{p.preco}</span>
+                  <span className="mb-1 text-sm text-tinta-suave">{p.periodo}</span>
+                </div>
+                <p className="mt-2 text-sm text-tinta-suave">{p.tagline}</p>
+                <ul className="mt-5 flex-1 space-y-2 text-sm text-tinta">
+                  {p.recursos.map((r) => (
+                    <li key={r} className="flex items-start gap-2">
+                      <span className="text-marca">✓</span>
+                      <span>{r}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/cadastrar"
+                  className={`btn mt-6 w-full ${p.destaque ? "btn-primario" : "btn-sec"}`}
+                >
+                  {p.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-center text-xs text-tinta-suave">
+            Sem fidelidade · Cancele quando quiser · Todos começam com 7 dias grátis
+          </p>
+        </div>
+      </section>
+
+      {/* Como começar (contratar + configurar) */}
+      <section id="comecar" className="scroll-mt-20 bg-slate-50">
+        <div className="mx-auto max-w-6xl px-5 py-16">
+          <div className="text-center">
+            <h2 className="font-display text-3xl font-bold text-tinta sm:text-4xl">Como começar</h2>
+            <p className="mt-3 text-tinta-suave">Do cadastro ao primeiro orçamento em poucos minutos.</p>
+          </div>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {COMECAR.map((p, i) => (
+              <div key={i} className="card relative p-6">
+                <div className="absolute -top-3 left-6 grid h-7 w-7 place-items-center rounded-full bg-marca text-xs font-bold text-white">
+                  {i + 1}
+                </div>
+                <div className="text-3xl">{p.icone}</div>
+                <h3 className="mt-3 font-display text-lg font-semibold text-tinta">{p.titulo}</h3>
+                <p className="mt-2 text-sm text-tinta-suave">{p.texto}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-9 flex justify-center">
+            <Link href="/cadastrar" className="btn btn-primario px-7 py-3 text-base">
+              Criar conta grátis
+            </Link>
           </div>
         </div>
       </section>
