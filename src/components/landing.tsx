@@ -34,6 +34,22 @@ const RECURSOS = [
   { icone: "📊", titulo: "Painel de controle", texto: "Acompanhe propostas enviadas, aprovadas e o que entrou." },
 ];
 
+// Dores de quem hoje recebe o pedido no WhatsApp e responde por texto.
+const DORES = [
+  "Você digita o orçamento na mão toda vez — e às vezes erra valor ou esquece um item.",
+  "O cliente recebe um textão solto, difícil de entender e fácil de se perder na conversa.",
+  "Sem PDF e sem link de aprovação, o orçamento parece amador e não passa confiança.",
+  "Você não tem controle do que enviou, do que foi aprovado, nem de quanto está fechando.",
+];
+
+// Formas de criar e entregar o orçamento.
+const FORMAS = [
+  { icone: "💬", titulo: "Pelo WhatsApp", texto: "Receba o pedido e responda com o orçamento pronto na própria conversa." },
+  { icone: "📄", titulo: "Em PDF", texto: "Proposta profissional com a sua marca, pronta para anexar e enviar." },
+  { icone: "🔗", titulo: "Por link", texto: "O cliente abre, vê tudo organizado e aprova online com um toque." },
+  { icone: "🖥️", titulo: "Pela plataforma", texto: "Crie e acompanhe seus orçamentos no painel, do computador ou do celular." },
+];
+
 const PROFISSOES = [
   "Arquitetos",
   "Advogados",
@@ -220,6 +236,58 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* A dor — como é hoje */}
+      <section className="border-y border-slate-100 bg-slate-50">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-600">
+              Soa familiar?
+            </span>
+            <h2 className="mt-4 font-display text-3xl font-bold leading-tight text-tinta sm:text-4xl">
+              Hoje você recebe o pedido no WhatsApp… e responde com um textão.
+            </h2>
+            <ul className="mt-6 space-y-3">
+              {DORES.map((d) => (
+                <li key={d} className="flex items-start gap-3 text-tinta">
+                  <span className="mt-0.5 text-rose-500">✕</span>
+                  <span>{d}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 font-semibold text-tinta">
+              Dá pra fazer muito melhor — <span className="text-marca">sem sair do WhatsApp</span>.
+            </p>
+          </div>
+
+          {/* mockup do orçamento por texto (do jeito amador) */}
+          <div className="mx-auto w-full max-w-sm">
+            <div className="rounded-[2rem] border-8 border-slate-900 bg-slate-900 shadow-xl">
+              <div className="overflow-hidden rounded-[1.4rem] bg-[#e6ddd4]">
+                <div className="flex items-center gap-2 bg-[#075e54] px-4 py-3 text-white">
+                  <div className="grid h-8 w-8 place-items-center rounded-full bg-white/20 text-sm font-bold">C</div>
+                  <div className="text-sm font-semibold">Cliente</div>
+                </div>
+                <div className="space-y-2 px-3 py-4 text-[13px]">
+                  <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-slate-800 shadow-sm">
+                    Bom dia! Quanto fica pra pintar meu apê? 🏠
+                  </div>
+                  <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-[#dcf8c6] px-3 py-2 text-slate-800 shadow-sm">
+                    Oi! Então… é uns 80m², a R$28 o metro dá 2.240, mais a tinta… acho que uns 2.500 no
+                    total, faço em 5 dias, metade agora metade no fim. Qualquer coisa me avisa 👍
+                  </div>
+                  <div className="ml-auto max-w-[60%] rounded-2xl rounded-tr-sm bg-[#dcf8c6] px-3 py-2 text-slate-800 shadow-sm">
+                    *ou 2.400 no pix
+                  </div>
+                  <div className="mx-auto mt-1 rounded-md bg-rose-50 px-2 py-1 text-center text-[11px] text-rose-600">
+                    😕 Sem PDF, sem link, sem padrão
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Como funciona */}
       <section id="como-funciona" className="mx-auto max-w-6xl px-5 py-16">
         <div className="text-center">
@@ -235,6 +303,25 @@ export default function Landing() {
               <div className="text-3xl">{p.icone}</div>
               <h3 className="mt-3 font-display text-xl font-semibold text-tinta">{p.titulo}</h3>
               <p className="mt-2 text-sm text-tinta-suave">{p.texto}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Formas de entregar o orçamento */}
+      <section className="mx-auto max-w-6xl px-5 py-16">
+        <div className="text-center">
+          <h2 className="font-display text-3xl font-bold text-tinta sm:text-4xl">
+            Entregue do jeito que você e seu cliente preferem
+          </h2>
+          <p className="mt-3 text-tinta-suave">O mesmo orçamento, pronto para enviar de 4 formas.</p>
+        </div>
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {FORMAS.map((f) => (
+            <div key={f.titulo} className="card flex flex-col items-start p-6">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-marca-clara text-2xl">{f.icone}</div>
+              <h3 className="mt-3 font-display text-lg font-semibold text-tinta">{f.titulo}</h3>
+              <p className="mt-1 text-sm text-tinta-suave">{f.texto}</p>
             </div>
           ))}
         </div>
