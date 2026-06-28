@@ -1,5 +1,6 @@
 import Link from "next/link";
 import NovoOrcamentoForm from "@/components/novo-orcamento-form";
+import WhatsAppCta from "@/components/whatsapp-cta";
 
 export default function NovoOrcamentoPage() {
   return (
@@ -9,6 +10,9 @@ export default function NovoOrcamentoPage() {
         <p className="text-sm text-tinta-suave">Escreva como você falaria no WhatsApp</p>
       </header>
       <div className="max-w-3xl px-7 py-6">
+        <div className="mb-5">
+          <WhatsAppCta compacto />
+        </div>
         <NovoOrcamentoForm />
         <p className="mt-4 text-sm text-tinta-suave">
           <Link href="/propostas" className="font-semibold text-marca hover:underline">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { lerSessao } from "@/lib/auth";
 import { uma } from "@/lib/db";
+import WhatsAppCta from "@/components/whatsapp-cta";
 
 function brl(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -41,6 +42,10 @@ export default async function PainelPage() {
       </header>
 
       <div className="max-w-5xl px-7 py-6">
+        <div className="mb-6">
+          <WhatsAppCta />
+        </div>
+
         <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {kpis.map((k) => (
             <div key={k.rotulo} className="card p-4">

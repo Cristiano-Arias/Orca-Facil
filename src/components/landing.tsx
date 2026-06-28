@@ -42,6 +42,16 @@ const DORES = [
   "Você não tem controle do que enviou, do que foi aprovado, nem de quanto está fechando.",
 ];
 
+// Os diferenciais — vai muito além do "PDF no WhatsApp".
+const DIFERENCIAIS = [
+  { icone: "🗣️", titulo: "Fala do seu jeito", texto: "A IA entende sua mensagem em português natural. Sem formulário, sem campos para preencher." },
+  { icone: "🧮", titulo: "Vários serviços de uma vez", texto: "Manda tudo numa mensagem só — ele separa cada item, calcula e soma o total." },
+  { icone: "🧠", titulo: "Aprende com você", texto: "Cadastra clientes e serviços sozinho e lembra dos seus preços para a próxima." },
+  { icone: "📄", titulo: "PDF com a sua marca", texto: "Proposta profissional com o seu logo e as suas cores, no WhatsApp ou para baixar." },
+  { icone: "✅", titulo: "Aprovação por link", texto: "O cliente abre, aprova, recusa ou pede ajuste online — e você é avisado." },
+  { icone: "📊", titulo: "Tudo sob controle", texto: "Painel com o que foi enviado, aprovado e quanto você já fechou no mês." },
+];
+
 // Formas de criar e entregar o orçamento.
 const FORMAS = [
   { icone: "💬", titulo: "Pelo WhatsApp", texto: "Receba o pedido e responda com o orçamento pronto na própria conversa." },
@@ -329,40 +339,38 @@ export default function Landing() {
 
       {/* Diferencial */}
       <section className="bg-marca">
-        <div className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-16 lg:grid-cols-2">
-          <div className="text-white">
+        <div className="mx-auto max-w-6xl px-5 py-16">
+          <div className="mx-auto max-w-3xl text-center text-white">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
               O nosso diferencial
             </span>
             <h2 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl">
-              O orçamento em PDF, dentro do WhatsApp.
+              Não é só PDF no WhatsApp. É o orçamento inteiro resolvido.
             </h2>
-            <p className="mt-4 max-w-xl text-white/90">
-              Enquanto outros apps te obrigam a abrir o computador e preencher formulários, aqui você fica onde já
-              está: no WhatsApp. O orçamento volta como um <strong>PDF profissional</strong>, com a sua marca, pronto
-              para repassar ao cliente na mesma conversa.
+            <p className="mt-4 text-white/90">
+              Da mensagem do cliente à proposta aprovada — o OrçaChat cuida de tudo, sem você sair da conversa nem
+              abrir o computador.
             </p>
-            <ul className="mt-6 space-y-2 text-white/90">
-              <li>✓ Nada de planilha ou formulário longo</li>
-              <li>✓ Proposta com a sua identidade (logo e cores)</li>
-              <li>✓ Cliente aprova por um link, sem complicação</li>
-            </ul>
           </div>
-          <div className="rounded-2xl bg-white p-6 shadow-xl">
-            <div className="text-sm font-semibold text-tinta-suave">Antes × Depois</div>
-            <div className="mt-3 grid gap-3">
-              <div className="rounded-xl bg-slate-50 p-4">
-                <div className="text-xs font-bold uppercase tracking-wide text-rose-500">Sem o OrçaChat</div>
-                <p className="mt-1 text-sm text-tinta">
-                  Abrir o computador, montar no Word/planilha, formatar, exportar PDF, achar o contato e enviar.
-                </p>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {DIFERENCIAIS.map((d) => (
+              <div key={d.titulo} className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/15">
+                <div className="text-2xl">{d.icone}</div>
+                <h3 className="mt-2 font-display text-lg font-semibold text-white">{d.titulo}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-white/85">{d.texto}</p>
               </div>
-              <div className="rounded-xl bg-marca-clara p-4">
-                <div className="text-xs font-bold uppercase tracking-wide text-marca">Com o OrçaChat</div>
-                <p className="mt-1 text-sm text-tinta">
-                  Mandar uma mensagem. Receber o PDF pronto. Encaminhar para o cliente. ⏱️ segundos.
-                </p>
-              </div>
+            ))}
+          </div>
+
+          <div className="mx-auto mt-8 flex max-w-2xl flex-col gap-3 rounded-2xl bg-white p-5 shadow-xl sm:flex-row">
+            <div className="flex-1 rounded-xl bg-slate-50 p-4">
+              <div className="text-xs font-bold uppercase tracking-wide text-rose-500">Sem o OrçaChat</div>
+              <p className="mt-1 text-sm text-tinta">Abrir o PC, montar na planilha, formatar, exportar, achar o contato, enviar.</p>
+            </div>
+            <div className="flex-1 rounded-xl bg-marca-clara p-4">
+              <div className="text-xs font-bold uppercase tracking-wide text-marca">Com o OrçaChat</div>
+              <p className="mt-1 text-sm text-tinta">Mandar uma mensagem. Receber tudo pronto. Encaminhar. ⏱️ segundos.</p>
             </div>
           </div>
         </div>
