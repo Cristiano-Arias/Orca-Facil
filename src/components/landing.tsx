@@ -318,6 +318,25 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Vídeo de demonstração */}
+      <section className="border-y border-slate-100 bg-slate-50">
+        <div className="mx-auto max-w-4xl px-5 py-16 text-center">
+          <h2 className="font-display text-3xl font-bold text-tinta sm:text-4xl">Veja o OrçaChat funcionando</h2>
+          <p className="mt-3 text-tinta-suave">Do recado ao orçamento pronto — em menos de 1 minuto.</p>
+          <div className="mt-8">
+            <video
+              controls
+              playsInline
+              preload="metadata"
+              className="mx-auto max-h-[78vh] w-auto max-w-full rounded-2xl bg-black shadow-lg ring-1 ring-slate-200"
+            >
+              <source src="/orcachat.mp4" type="video/mp4" />
+              Seu navegador não consegue mostrar este vídeo.
+            </video>
+          </div>
+        </div>
+      </section>
+
       {/* Formas de entregar o orçamento */}
       <section className="mx-auto max-w-6xl px-5 py-16">
         <div className="text-center">
