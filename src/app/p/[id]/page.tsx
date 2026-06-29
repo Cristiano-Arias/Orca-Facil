@@ -30,6 +30,11 @@ export default async function PaginaCliente({ params }: { params: { id: string }
   return (
     <main className="min-h-screen bg-[var(--bg)] px-4 py-8">
       <div className="mx-auto max-w-2xl">
+        {status === "AJUSTADA" && (
+          <div className="mb-5 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-3 text-center text-sm text-sky-800">
+            ✅ <b>Proposta ajustada!</b> O profissional revisou conforme o seu pedido. Confira abaixo e responda.
+          </div>
+        )}
         <ProposalDoc perfil={dados.perfil} proposta={dados.proposta} cliente={dados.cliente} itens={dados.itens} />
 
         <div className="mt-5 rounded-2xl bg-slate-900 p-5 text-white">

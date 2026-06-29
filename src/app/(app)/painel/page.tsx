@@ -55,19 +55,31 @@ export default async function PainelPage() {
           ))}
         </div>
 
-        <div className="card p-6">
-          <h3 className="text-lg font-semibold text-tinta">Bem-vindo ao OrçaChat 👋</h3>
-          <p className="mt-2 max-w-prose text-sm leading-relaxed text-tinta-suave">
-            Sua conta está pronta e seus dados ficam salvos na nuvem — acessíveis pelo celular e pelo
-            computador com o mesmo login. Nos próximos passos vamos ativar a criação de orçamentos por
-            texto, a geração de propostas em PDF, a página do cliente e o assistente do WhatsApp.
-          </p>
-          <div className="mt-4">
-            <Link href="/propostas/novo" className="btn btn-primario">
-              + Criar meu primeiro orçamento
-            </Link>
+        {propostas === 0 ? (
+          <div className="card p-6">
+            <h3 className="text-lg font-semibold text-tinta">Bem-vindo ao OrçaChat 👋</h3>
+            <p className="mt-2 max-w-prose text-sm leading-relaxed text-tinta-suave">
+              Sua conta está pronta e seus dados ficam salvos na nuvem — acessíveis pelo celular e pelo
+              computador com o mesmo login. Crie seu primeiro orçamento por texto, pelo WhatsApp ou passo a passo.
+            </p>
+            <div className="mt-4">
+              <Link href="/propostas/novo" className="btn btn-primario">
+                + Criar meu primeiro orçamento
+              </Link>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="card flex flex-wrap items-center justify-between gap-3 p-6">
+            <div>
+              <h3 className="text-lg font-semibold text-tinta">Tudo pronto para o próximo 🚀</h3>
+              <p className="mt-1 text-sm text-tinta-suave">Crie um novo orçamento ou veja os que já enviou.</p>
+            </div>
+            <div className="flex gap-2">
+              <Link href="/propostas/novo" className="btn btn-primario">+ Novo orçamento</Link>
+              <Link href="/propostas" className="btn btn-sec">Ver propostas</Link>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

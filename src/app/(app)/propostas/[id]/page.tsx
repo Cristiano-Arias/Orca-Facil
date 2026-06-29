@@ -8,7 +8,7 @@ import { BotaoImprimir, CopiarLink } from "@/components/proposal-actions";
 import { mudarStatus } from "@/app/actions/proposal";
 import { ST_LABEL } from "@/lib/proposal-format";
 
-const STATUS = ["RASCUNHO", "ENVIADA", "VISUALIZADA", "NEGOCIACAO", "APROVADA", "RECUSADA", "CONVERTIDA", "PAGA_PARCIAL", "PAGA", "CANCELADA"];
+const STATUS = ["RASCUNHO", "ENVIADA", "VISUALIZADA", "NEGOCIACAO", "AJUSTADA", "APROVADA", "RECUSADA", "CONVERTIDA", "PAGA_PARCIAL", "PAGA", "CANCELADA"];
 
 export default async function PropostaDetalhe({ params }: { params: { id: string } }) {
   const sessao = await lerSessao();
@@ -19,6 +19,13 @@ export default async function PropostaDetalhe({ params }: { params: { id: string
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "";
   const proto = h.get("x-forwarded-proto") ?? "https";
   const linkCliente = `${proto}://${host}/p/${params.id}`;
+
+  // botão de enviar ao cliente pelo WhatsApp (#7)
+  const revisada = dados.proposta.status === "AJUSTADA";
+  const telCli = (dados.cliente?.telefone || "").replace(/\D/g, "");
+  const telBR = telCli ? (telCli.startsWith("55") ? telCli : "55" + telCli) : "";
+  const msgCli = `Olá ${dados.cliente?.nome || ""}! Segue ${revisada ? "a proposta revisada" : "o seu orçamento"} ${dados.proposta.numero}:\n${linkCliente}`;
+  const waCliente = telBR ? `https://wa.me/${telBR}?text=${encodeURIComponent(msgCli)}` : null;
 
   return (
     <>
@@ -38,6 +45,11 @@ export default async function PropostaDetalhe({ params }: { params: { id: string
           </Link>
           <CopiarLink url={linkCliente} />
           <BotaoImprimir id={params.id} />
+          {waCliente && (
+            <a href={waCliente} target="_blank" rel="noreferrer" className="btn bg-zap text-emerald-950 hover:brightness-105">
+              📲 Enviar ao cliente
+            </a>
+          )}
         </div>
       </header>
 
@@ -45,6 +57,18 @@ export default async function PropostaDetalhe({ params }: { params: { id: string
         {(dados.proposta as any).nota_cliente && dados.proposta.status === "NEGOCIACAO" && (
           <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
             <b>✋ O cliente pediu um ajuste:</b> {(dados.proposta as any).nota_cliente}
+          </div>
+        )}
+        {revisada && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900 print:hidden">
+            <span>✅ <b>Proposta ajustada.</b> Envie a versão revisada ao cliente.</span>
+            {waCliente ? (
+              <a href={waCliente} target="_blank" rel="noreferrer" className="btn bg-zap text-emerald-950 hover:brightness-105">
+                Enviar revisada no WhatsApp
+              </a>
+            ) : (
+              <span className="text-xs text-sky-700">Cadastre o telefone do cliente para enviar.</span>
+            )}
           </div>
         )}
         <ProposalDoc perfil={dados.perfil} proposta={dados.proposta} cliente={dados.cliente} itens={dados.itens} />

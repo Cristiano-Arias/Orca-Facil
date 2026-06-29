@@ -20,6 +20,32 @@ export async function orgPorWhatsapp(senderDigits: string): Promise<{ orgId: str
   return null;
 }
 
+// ---- memória de conversa do WhatsApp (perguntar o que falta) ----
+export type SessaoWa = { campos: CamposExtraidos; etapa: string | null };
+
+export async function lerSessaoWa(orgId: string, sender: string): Promise<SessaoWa | null> {
+  const row = await uma<{ campos: any; etapa: string | null }>(
+    "SELECT campos, etapa FROM orcafacil.wa_session WHERE org_id = $1 AND sender = $2",
+    [orgId, sender]
+  );
+  if (!row) return null;
+  const campos = typeof row.campos === "string" ? JSON.parse(row.campos) : row.campos || {};
+  return { campos: campos as CamposExtraidos, etapa: row.etapa };
+}
+
+export async function salvarSessaoWa(orgId: string, sender: string, campos: CamposExtraidos, etapa: string): Promise<void> {
+  await q(
+    `INSERT INTO orcafacil.wa_session (org_id, sender, campos, etapa, atualizado_em)
+     VALUES ($1,$2,$3::jsonb,$4, now())
+     ON CONFLICT (org_id, sender) DO UPDATE SET campos = $3::jsonb, etapa = $4, atualizado_em = now()`,
+    [orgId, sender, JSON.stringify(campos), etapa]
+  );
+}
+
+export async function limparSessaoWa(orgId: string, sender: string): Promise<void> {
+  await q("DELETE FROM orcafacil.wa_session WHERE org_id = $1 AND sender = $2", [orgId, sender]);
+}
+
 export async function servicosDaOrg(orgId: string): Promise<ServicoConhecido[]> {
   const rows = await q<any>(
     "SELECT nome, unidade, preco_padrao, custo_padrao, garantia_padrao FROM orcafacil.service WHERE org_id = $1",

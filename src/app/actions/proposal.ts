@@ -7,7 +7,7 @@ import { lerSessao } from "@/lib/auth";
 import { q, uma } from "@/lib/db";
 
 const VALIDOS = [
-  "RASCUNHO", "AGUARDANDO", "ENVIADA", "VISUALIZADA", "NEGOCIACAO",
+  "RASCUNHO", "AGUARDANDO", "ENVIADA", "VISUALIZADA", "NEGOCIACAO", "AJUSTADA",
   "APROVADA", "RECUSADA", "VENCIDA", "CANCELADA", "CONVERTIDA", "PAGA_PARCIAL", "PAGA",
 ];
 
@@ -36,8 +36,8 @@ export async function atualizarProposta(formData: FormData) {
   if (!sessao) redirect("/entrar");
   const id = String(formData.get("id") || "");
 
-  const pr = await uma<{ id: string; client_id: string | null }>(
-    "SELECT id, client_id FROM orcafacil.proposal WHERE id = $1 AND org_id = $2",
+  const pr = await uma<{ id: string; client_id: string | null; status: string }>(
+    "SELECT id, client_id, status FROM orcafacil.proposal WHERE id = $1 AND org_id = $2",
     [id, sessao!.orgId]
   );
   if (!pr) redirect("/propostas");
@@ -83,6 +83,11 @@ export async function atualizarProposta(formData: FormData) {
        validade_dias = $5, desconto = $6, obs = $7 WHERE id = $8 AND org_id = $9`,
     [itens[0].descricao, str("prazo"), str("pagamento"), str("garantia"), validade, desconto, str("obs"), id, sessao!.orgId]
   );
+
+  // se o cliente havia pedido ajuste, marca como "Ajustada" (revisada)
+  if (pr.status === "NEGOCIACAO") {
+    await q("UPDATE orcafacil.proposal SET status = 'AJUSTADA' WHERE id = $1 AND org_id = $2", [id, sessao!.orgId]);
+  }
 
   await q("DELETE FROM orcafacil.proposal_item WHERE proposal_id = $1", [id]);
   for (const it of itens) {

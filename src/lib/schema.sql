@@ -101,6 +101,16 @@ CREATE TABLE IF NOT EXISTS orcafacil.proposal (
 -- garante a coluna de nota do cliente em bancos já existentes (idempotente)
 ALTER TABLE orcafacil.proposal ADD COLUMN IF NOT EXISTS nota_cliente TEXT;
 
+-- memória de conversa do WhatsApp (para perguntar o que falta, passo a passo)
+CREATE TABLE IF NOT EXISTS orcafacil.wa_session (
+  org_id        TEXT NOT NULL,
+  sender        TEXT NOT NULL,
+  campos        JSONB NOT NULL DEFAULT '{}',
+  etapa         TEXT,
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (org_id, sender)
+);
+
 CREATE TABLE IF NOT EXISTS orcafacil.proposal_item (
   id          TEXT PRIMARY KEY,
   proposal_id TEXT NOT NULL REFERENCES orcafacil.proposal(id) ON DELETE CASCADE,

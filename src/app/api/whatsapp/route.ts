@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { orgPorWhatsapp, servicosDaOrg, criarProposta } from "@/lib/quotes";
+import { orgPorWhatsapp, servicosDaOrg, criarProposta, lerSessaoWa, salvarSessaoWa, limparSessaoWa } from "@/lib/quotes";
 import { uma } from "@/lib/db";
 import { extrairCampos, camposFaltando, sanitizar, type CamposExtraidos } from "@/lib/parser";
 import { extrairComIA } from "@/lib/ai";
@@ -59,6 +59,31 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
+// junta o que já tinha na conversa com o que veio na mensagem nova.
+function mesclar(ant: CamposExtraidos | undefined, novo: CamposExtraidos): CamposExtraidos {
+  const out: Record<string, unknown> = { ...(ant ?? {}) };
+  for (const [k, v] of Object.entries(novo)) {
+    if (v === null || v === undefined || v === "") continue;
+    if (Array.isArray(v) && v.length === 0) continue;
+    out[k] = v;
+  }
+  return out as CamposExtraidos;
+}
+
+// transforma a lista do que falta em uma pergunta amigável (só o que falta).
+function perguntaFalta(falta: string[]): string {
+  const mapa: Record<string, string> = {
+    cliente: "o *nome do cliente*",
+    serviço: "qual *serviço* você vai fazer",
+    quantidade: "a *quantidade* (ex.: 80 m², 3 portas)",
+    valor: "o *valor* (ex.: R$ 28 o metro, ou R$ 2.000 no total)",
+    "valor de algum item": "o *valor* de cada serviço",
+  };
+  const itens = falta.map((f) => mapa[f] ?? f);
+  const lista = itens.length === 1 ? itens[0] : itens.slice(0, -1).join(", ") + " e " + itens[itens.length - 1];
+  return `Quase lá! 🙂 Só preciso saber ${lista}. Pode me mandar?`;
+}
+
 async function processar(from: string, texto: string) {
   const sender = soDigitos(from);
   const org = await orgPorWhatsapp(sender);
@@ -73,8 +98,21 @@ async function processar(from: string, texto: string) {
     return;
   }
 
+  const sessao = await lerSessaoWa(org.orgId, sender);
   const limpo = texto.trim().toLowerCase();
-  if (/^(oi|ol[áa]|menu|ajuda|come[çc]ar|start)\b/.test(limpo)) {
+
+  // comando para recomeçar
+  if (/^(cancelar|cancela|recome[çc]ar|reiniciar|apagar|esquecer)\b/.test(limpo)) {
+    await limparSessaoWa(org.orgId, sender);
+    await enviarWhatsApp(from, "Ok, recomeçamos do zero. 👍 Pode me mandar os dados do novo orçamento.");
+    return;
+  }
+
+  // "finalizar" = criar com o que já temos (mesmo faltando condições)
+  const ehFinalizar = /^(finalizar|finaliza|pode finalizar|pode criar|criar|cria|assim mesmo|pode mandar|manda assim|sim,? pode|ok,? pode)\b/.test(limpo);
+
+  // saudação só quando NÃO há conversa em andamento
+  if (!sessao && !ehFinalizar && /^(oi|ol[áa]|ola|menu|ajuda|come[çc]ar|comecar|start|bom dia|boa tarde|boa noite)\b/.test(limpo)) {
     await enviarWhatsApp(
       from,
       `Oi! Sou o *OrçaChat*. 💬\nMe mande os dados de um serviço numa frase e eu monto a proposta. Ex.:\n\n_"Orçamento para João, pintura de apartamento, 80 m², R$ 28 por metro, prazo 5 dias, pagamento 50% entrada e 50% na entrega"_`
@@ -82,7 +120,7 @@ async function processar(from: string, texto: string) {
     return;
   }
 
-  // interpreta (interpretador embutido + IA, se houver chave)
+  // interpreta a mensagem e junta com o que já estava na conversa
   const conhecidos = await servicosDaOrg(org.orgId);
   const base = extrairCampos(texto, conhecidos);
   const ia = await extrairComIA(texto);
@@ -91,23 +129,38 @@ async function processar(from: string, texto: string) {
     for (const [k, v] of Object.entries(o)) if (v !== null && v !== undefined && v !== "") out[k] = v;
     return out as CamposExtraidos;
   };
-  const campos = sanitizar(ia ? { ...base, ...limparObj(ia) } : base);
+  const novos = sanitizar(ia ? { ...base, ...limparObj(ia) } : base);
+  const campos = mesclar(sessao?.campos, novos);
 
+  // 1) perguntas ESSENCIAIS (cliente, serviço, valor) — pergunta só o que falta
   const falta = camposFaltando(campos);
-  console.log(`[whatsapp] campos=${JSON.stringify(campos)} falta=${JSON.stringify(falta)}`);
+  console.log(`[whatsapp] campos=${JSON.stringify(campos)} falta=${JSON.stringify(falta)} etapa=${sessao?.etapa}`);
   if (falta.length > 0) {
+    await salvarSessaoWa(org.orgId, sender, campos, "coletando");
+    await enviarWhatsApp(from, perguntaFalta(falta));
+    return;
+  }
+
+  // 2) condições essenciais (prazo, pagamento) — pergunta uma vez, se não houver padrão
+  const perfil = await uma<{ validade_padrao: number; prazo_padrao: string | null; pagamento_padrao: string | null }>(
+    "SELECT validade_padrao, prazo_padrao, pagamento_padrao FROM orcafacil.profile WHERE org_id = $1",
+    [org.orgId]
+  );
+  const faltaCond: string[] = [];
+  if (!campos.prazo && !perfil?.prazo_padrao) faltaCond.push("o *prazo de entrega*");
+  if (!campos.pagamento && !perfil?.pagamento_padrao) faltaCond.push("a *forma de pagamento*");
+  if (faltaCond.length && !ehFinalizar && sessao?.etapa !== "condicoes") {
+    await salvarSessaoWa(org.orgId, sender, campos, "condicoes");
+    const lista = faltaCond.length === 1 ? faltaCond[0] : faltaCond.join(" e ");
     await enviarWhatsApp(
       from,
-      `Entendi parte da mensagem, mas faltou: *${falta.join(", ")}*.\nPode me mandar a frase completa? 🙂`
+      `Faltou ${lista}. Me manda esses dados, ou responda *finalizar* que eu crio assim mesmo. 🙂`
     );
     return;
   }
 
   try {
-    const perfil = await uma<{ validade_padrao: number }>(
-      "SELECT validade_padrao FROM orcafacil.profile WHERE org_id = $1",
-      [org.orgId]
-    );
+    await limparSessaoWa(org.orgId, sender);
     const { proposalId, numero, avisos, itens, subtotal, desconto, total } = await criarProposta(
       org.orgId,
       campos,
@@ -144,7 +197,8 @@ async function processar(from: string, texto: string) {
     if (campos.garantia) cond.push(`🛡️ Garantia: ${campos.garantia}`);
     if (cond.length) resp += `\n${cond.join("\n")}\n`;
 
-    resp += `\n📄 Link para o cliente:\n${url}/p/${proposalId}\n\n`;
+    resp += `\n📄 Baixar PDF:\n${url}/p/${proposalId}/pdf\n\n`;
+    resp += `🔗 Link para o cliente (ele aprova online):\n${url}/p/${proposalId}\n\n`;
     resp += `✏️ Ver/editar:\n${url}/propostas/${proposalId}`;
     const enviado = await enviarWhatsApp(from, resp);
 
