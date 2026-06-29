@@ -8,13 +8,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const sessao = await lerSessao();
   if (!sessao) redirect("/entrar");
 
-  // Sessão órfã: a conta do cookie não existe mais no banco (ex.: criada numa
-  // versão anterior). Em vez de erros confusos, encerra e pede login de novo.
-  const org = await uma("SELECT 1 FROM orcafacil.organization WHERE id = $1", [sessao.orgId]);
-  if (!org) redirect("/sair");
+  // Busca o perfil: serve para (1) detectar sessão órfã e (2) mostrar o nome
+  // sempre atualizado conforme o perfil (sem precisar sair e entrar de novo).
+  const perfil = await uma<{ nome_comercial: string | null; responsavel: string | null }>(
+    "SELECT nome_comercial, responsavel FROM orcafacil.profile WHERE org_id = $1",
+    [sessao.orgId]
+  );
+  if (!perfil) redirect("/sair"); // conta do cookie não existe mais no banco
+
+  const nomeExibicao = perfil.responsavel?.trim() || perfil.nome_comercial?.trim() || sessao.nome;
 
   return (
-    <AppShell nome={sessao.nome} ehDono={ehDono(sessao.email)}>
+    <AppShell nome={nomeExibicao} ehDono={ehDono(sessao.email)}>
       {children}
     </AppShell>
   );
