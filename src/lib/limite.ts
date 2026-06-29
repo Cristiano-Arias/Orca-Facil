@@ -2,7 +2,7 @@
 // A cota NÃO acumula — zera no início de cada mês. O teste grátis dá acesso
 // ao plano escolhido durante os 7 dias (mesma cota do plano).
 import { uma } from "./db";
-import { situacao, getPlanos, type PerfilAssinatura, type PlanoKey } from "./billing";
+import { situacao, getPlanos, TRIAL_COTA, type PerfilAssinatura, type PlanoKey } from "./billing";
 
 export type Uso = {
   modo: "livre" | "trial" | "ativa" | "expirado";
@@ -40,15 +40,28 @@ export async function usoDaConta(orgId: string, ehDono = false): Promise<Uso> {
     return { modo: "expirado", limite: 0, usados: 0, restantes: 0, bloqueado: true };
   }
 
-  // trial ou ativa: usa a cota do plano
-  const planos = await getPlanos();
   const plano = sit.plano as PlanoKey;
-  const cota = planos[plano]?.cota ?? null;
   const usados = await contarMes(orgId);
+
+  // teste grátis: amostra de até TRIAL_COTA orçamentos (não usa a cota do plano)
+  if (sit.modo === "trial") {
+    return {
+      modo: "trial",
+      plano,
+      dias: sit.dias,
+      limite: TRIAL_COTA,
+      usados,
+      restantes: Math.max(0, TRIAL_COTA - usados),
+      bloqueado: usados >= TRIAL_COTA,
+    };
+  }
+
+  // ativa: usa a cota do plano contratado
+  const planos = await getPlanos();
+  const cota = planos[plano]?.cota ?? null;
   return {
-    modo: sit.modo,
+    modo: "ativa",
     plano,
-    dias: sit.modo === "trial" ? sit.dias : undefined,
     limite: cota,
     usados,
     restantes: cota === null ? null : Math.max(0, cota - usados),

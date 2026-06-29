@@ -3,6 +3,9 @@
 import { q } from "./db";
 
 export const TRIAL_DIAS = Number(process.env.TRIAL_DIAS || 7);
+// Orçamentos liberados durante o teste grátis (não acumula). É menor que o Inicial
+// de propósito: o teste é uma amostra (até 5), depois vira o plano Inicial.
+export const TRIAL_COTA = Number(process.env.TRIAL_COTA || 5);
 
 export type PlanoKey = "inicial" | "profissional" | "ilimitado";
 

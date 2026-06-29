@@ -32,15 +32,15 @@ export default async function AssinaturaPage({ searchParams }: { searchParams: {
       nome: "Teste Grátis",
       precoFmt: "Grátis",
       precoSub: "por 7 dias",
-      cotaTexto: `Tudo do plano ${pTeste.nome}`,
+      cotaTexto: "Até 5 orçamentos",
       cta: "Começar teste grátis",
       teste: true,
       badge: "Comece aqui",
       recursos: [
-        "7 dias grátis, sem pagar nada",
+        "Até 5 orçamentos em 7 dias",
         "Pede o cartão (cancele quando quiser)",
-        `Depois, ${brl(pTeste.preco)}/mês (plano ${pTeste.nome})`,
-        "Acesso completo durante o teste",
+        `Depois vira ${pTeste.nome}: ${brl(pTeste.preco)}/mês`,
+        "Sem pagar nada durante o teste",
       ],
     },
     ...PLANO_KEYS.map<PlanoView>((k) => ({
@@ -80,9 +80,8 @@ export default async function AssinaturaPage({ searchParams }: { searchParams: {
           )}
           {uso.modo === "trial" && (
             <p className="mt-1 text-sm text-tinta-suave">
-              Teste grátis: <b>{uso.dias} dia(s)</b> restante(s) — plano{" "}
-              <b>{planos[uso.plano as PlanoKey]?.nome ?? uso.plano}</b>
-              {uso.limite !== null && <> · {uso.usados} de {uso.limite} orçamentos usados este mês</>}.
+              Teste grátis: <b>{uso.dias} dia(s)</b> restante(s) — você usou <b>{uso.usados} de {uso.limite}</b> orçamentos.
+              {" "}Depois vira o plano {planos.inicial.nome}.
             </p>
           )}
           {uso.modo === "ativa" && (

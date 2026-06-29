@@ -65,14 +65,15 @@ export default function PlanosGrid({
             {ativo ? (
               <div className="btn btn-sec mt-6 w-full cursor-default">Plano atual</div>
             ) : (
-              // o form só dispara quando o profissional confirma no botão
-              <form action={assinar} className="mt-6">
+              // o form só dispara quando o profissional confirma no botão.
+              // stopPropagation: o clique no botão não deve ser "engolido" pela seleção do card.
+              <form action={assinar} className="mt-6" onClick={(e) => e.stopPropagation()}>
                 {p.teste ? (
                   <input type="hidden" name="teste" value="1" />
                 ) : (
                   <input type="hidden" name="plano" value={p.key} />
                 )}
-                <button className={`btn w-full ${escolhido ? "btn-primario" : "btn-sec"}`}>
+                <button type="submit" className={`btn w-full ${escolhido ? "btn-primario" : "btn-sec"}`}>
                   {p.cta ?? `Assinar ${p.nome}`}
                 </button>
               </form>
