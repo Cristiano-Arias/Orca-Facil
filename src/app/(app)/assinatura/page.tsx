@@ -38,9 +38,10 @@ export default async function AssinaturaPage({ searchParams }: { searchParams: {
       badge: "Comece aqui",
       recursos: [
         "Até 5 orçamentos em 7 dias",
-        "Pede o cartão (cancele quando quiser)",
-        `Depois vira ${pTeste.nome}: ${brl(pTeste.preco)}/mês`,
-        "Sem pagar nada durante o teste",
+        "Orçamentos pelo WhatsApp e pelo site",
+        "PDF profissional com a sua logo",
+        "Link de aprovação para o cliente",
+        "Histórico de clientes e serviços",
       ],
     },
     ...PLANO_KEYS.map<PlanoView>((k) => ({

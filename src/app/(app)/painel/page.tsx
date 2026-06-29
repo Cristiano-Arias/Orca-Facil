@@ -62,7 +62,7 @@ export default async function PainelPage() {
             <Link href="/assinatura" className="btn btn-primario btn-sm">Fazer upgrade</Link>
           </div>
         )}
-        {uso.modo === "expirado" && (
+        {uso.modo === "expirado" && uso.jaIniciou && (
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
             <span>🔒 Seu teste grátis terminou. Assine um plano para continuar criando orçamentos.</span>
             <Link href="/assinatura" className="btn btn-primario btn-sm">Assinar agora</Link>
@@ -84,16 +84,30 @@ export default async function PainelPage() {
 
         {uso.modo === "expirado" ? (
           <div className="card p-6">
-            <h3 className="text-lg font-semibold text-tinta">Comece seu teste grátis 🎁</h3>
-            <p className="mt-2 max-w-prose text-sm leading-relaxed text-tinta-suave">
-              Para criar orçamentos, comece o teste grátis de 7 dias. Você cadastra o cartão, usa tudo sem pagar
-              durante o teste e só é cobrado depois — cancele quando quiser.
-            </p>
-            <div className="mt-4">
-              <Link href="/assinatura" className="btn btn-primario">
-                Começar teste grátis de 7 dias
-              </Link>
-            </div>
+            {uso.jaIniciou ? (
+              <>
+                <h3 className="text-lg font-semibold text-tinta">Seu acesso terminou 🔒</h3>
+                <p className="mt-2 max-w-prose text-sm leading-relaxed text-tinta-suave">
+                  Para voltar a criar orçamentos, escolha um plano. Sua conta e seus dados continuam salvos.
+                </p>
+                <div className="mt-4">
+                  <Link href="/assinatura" className="btn btn-primario">Ver planos</Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-lg font-semibold text-tinta">Comece seu teste grátis 🎁</h3>
+                <p className="mt-2 max-w-prose text-sm leading-relaxed text-tinta-suave">
+                  Para criar orçamentos, comece o teste grátis de 7 dias (até 5 orçamentos). Você cadastra o cartão,
+                  usa sem pagar durante o teste e só é cobrado depois — cancele quando quiser.
+                </p>
+                <div className="mt-4">
+                  <Link href="/assinatura" className="btn btn-primario">
+                    Começar teste grátis de 7 dias
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         ) : propostas === 0 ? (
           <div className="card p-6">

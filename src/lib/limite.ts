@@ -12,6 +12,7 @@ export type Uso = {
   restantes: number | null; // null = ilimitado
   bloqueado: boolean; // true = não pode criar agora
   dias?: number; // dias restantes do teste grátis
+  jaIniciou?: boolean; // já começou um teste/assinatura alguma vez (para a mensagem certa)
 };
 
 // Orçamentos criados no mês corrente.
@@ -26,8 +27,8 @@ async function contarMes(orgId: string): Promise<number> {
 
 // Calcula a situação de uso da conta. O dono nunca é limitado.
 export async function usoDaConta(orgId: string, ehDono = false): Promise<Uso> {
-  const perfil = await uma<PerfilAssinatura>(
-    `SELECT plano, assinatura_status, assinatura_ate, trial_ate FROM orcafacil.profile WHERE org_id = $1`,
+  const perfil = await uma<PerfilAssinatura & { mp_preapproval_id: string | null }>(
+    `SELECT plano, assinatura_status, assinatura_ate, trial_ate, mp_preapproval_id FROM orcafacil.profile WHERE org_id = $1`,
     [orgId]
   );
   const sit = situacao(perfil, ehDono);
@@ -37,7 +38,10 @@ export async function usoDaConta(orgId: string, ehDono = false): Promise<Uso> {
   }
 
   if (sit.modo === "expirado") {
-    return { modo: "expirado", limite: 0, usados: 0, restantes: 0, bloqueado: true };
+    // "já iniciou" = já cadastrou cartão/assinatura ou já teve um teste com data.
+    // Serve para escolher a mensagem certa: "comece o teste" x "seu teste terminou".
+    const jaIniciou = !!perfil?.mp_preapproval_id || !!perfil?.trial_ate;
+    return { modo: "expirado", limite: 0, usados: 0, restantes: 0, bloqueado: true, jaIniciou };
   }
 
   const plano = sit.plano as PlanoKey;
