@@ -11,11 +11,13 @@ const NAV = [
   { href: "/clientes", label: "Clientes" },
   { href: "/servicos", label: "Serviços" },
   { href: "/perfil", label: "Meu perfil" },
+  { href: "/ajuda", label: "Ajuda" },
 ];
 
-export default function AppShell({ nome, children }: { nome: string; children: React.ReactNode }) {
+export default function AppShell({ nome, ehDono = false, children }: { nome: string; ehDono?: boolean; children: React.ReactNode }) {
   const path = usePathname();
   const [aberto, setAberto] = useState(false);
+  const nav = ehDono ? [...NAV, { href: "/dono", label: "👑 Painel do dono" }] : NAV;
 
   return (
     <div className="lg:flex">
@@ -64,7 +66,7 @@ export default function AppShell({ nome, children }: { nome: string; children: R
           </button>
         </div>
 
-        {NAV.map((n) => {
+        {nav.map((n) => {
           const ativo = path === n.href || path.startsWith(n.href + "/");
           return (
             <Link

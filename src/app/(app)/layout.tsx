@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { lerSessao } from "@/lib/auth";
 import { uma } from "@/lib/db";
+import { ehDono } from "@/lib/owner";
 import AppShell from "@/components/app-shell";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -12,5 +13,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const org = await uma("SELECT 1 FROM orcafacil.organization WHERE id = $1", [sessao.orgId]);
   if (!org) redirect("/sair");
 
-  return <AppShell nome={sessao.nome}>{children}</AppShell>;
+  return (
+    <AppShell nome={sessao.nome} ehDono={ehDono(sessao.email)}>
+      {children}
+    </AppShell>
+  );
 }
