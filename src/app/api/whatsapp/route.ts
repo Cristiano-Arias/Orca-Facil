@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { orgPorWhatsapp, servicosDaOrg, criarProposta, lerSessaoWa, salvarSessaoWa, limparSessaoWa } from "@/lib/quotes";
 import { uma } from "@/lib/db";
+import { usoDaConta, motivoBloqueio } from "@/lib/limite";
+import { ehDono } from "@/lib/owner";
 import { extrairCampos, camposFaltando, sanitizar, type CamposExtraidos } from "@/lib/parser";
 import { extrairComIA } from "@/lib/ai";
 import { enviarWhatsApp, enviarDocumentoWhatsApp, soDigitos } from "@/lib/whatsapp";
@@ -117,6 +119,18 @@ async function processar(from: string, texto: string) {
       from,
       `Oi! Sou o *OrçaChat*. 💬\nMe mande os dados de um serviço numa frase e eu monto a proposta. Ex.:\n\n_"Orçamento para João, pintura de apartamento, 80 m², R$ 28 por metro, prazo 5 dias, pagamento 50% entrada e 50% na entrega"_`
     );
+    return;
+  }
+
+  // cota do plano (não acumula no mês): se estourou, bloqueia e orienta a assinar
+  const dono = await uma<{ email: string }>(
+    "SELECT email FROM orcafacil.app_user WHERE org_id = $1 ORDER BY created_at LIMIT 1",
+    [org.orgId]
+  );
+  const uso = await usoDaConta(org.orgId, ehDono(dono?.email));
+  if (uso.bloqueado) {
+    await limparSessaoWa(org.orgId, sender);
+    await enviarWhatsApp(from, `${motivoBloqueio(uso)}\n\n👉 Escolha um plano aqui:\n${url}/assinatura`);
     return;
   }
 

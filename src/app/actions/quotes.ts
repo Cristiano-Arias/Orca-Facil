@@ -6,6 +6,8 @@ import { uma } from "@/lib/db";
 import { extrairCampos, camposFaltando, sanitizar, type CamposExtraidos } from "@/lib/parser";
 import { extrairComIA } from "@/lib/ai";
 import { servicosDaOrg, criarProposta } from "@/lib/quotes";
+import { usoDaConta, motivoBloqueio } from "@/lib/limite";
+import { ehDono } from "@/lib/owner";
 
 // A exceção que o redirect() lança internamente não deve ser tratada como erro.
 function ehRedirect(e: unknown): boolean {
@@ -19,6 +21,10 @@ export async function criarOrcamento(_prev: EstadoOrcamento, form: FormData): Pr
   if (!sessao) redirect("/entrar");
   const texto = String(form.get("texto") || "").trim();
   if (!texto) return { erro: "Escreva os dados do orçamento." };
+
+  // respeita a cota do plano (não acumula no mês)
+  const uso = await usoDaConta(sessao!.orgId, ehDono(sessao!.email));
+  if (uso.bloqueado) return { texto, erro: motivoBloqueio(uso) + " Veja os planos em Assinatura." };
 
   let proposalId: string;
   try {
@@ -63,6 +69,10 @@ function n(v: unknown): number {
 export async function criarOrcamentoManual(formData: FormData): Promise<void> {
   const sessao = await lerSessao();
   if (!sessao) redirect("/entrar");
+
+  // respeita a cota do plano (não acumula no mês)
+  const uso = await usoDaConta(sessao!.orgId, ehDono(sessao!.email));
+  if (uso.bloqueado) redirect("/assinatura?erro=limite");
 
   let itens: { descricao: string; qtd: number; unidade: string; preco: number }[] = [];
   try {

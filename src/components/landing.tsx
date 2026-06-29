@@ -87,7 +87,7 @@ const COMECAR = [
   {
     icone: "🧭",
     titulo: "Escolha seu plano",
-    texto: "Comece grátis por 7 dias. Depois escolha Essencial ou Premium — sem fidelidade, cancela quando quiser.",
+    texto: "Comece grátis por 7 dias. Depois escolha Inicial, Profissional ou Ilimitado — sem fidelidade, cancela quando quiser.",
   },
   {
     icone: "⚡",
@@ -106,48 +106,47 @@ const COMECAR = [
   },
 ];
 
-// PLANOS — preços provisórios (troque os valores de `preco` quando decidir).
+// PLANOS exibidos na página de vendas. Os valores devem bater com src/lib/billing.ts.
+// Todos começam com 7 dias grátis (até 5 orçamentos) — destacado no rodapé da seção.
 const PLANOS = [
   {
-    nome: "Degustação",
-    preco: "Grátis",
-    periodo: "por 7 dias",
-    tagline: "Experimente sem compromisso. Ideal para conhecer o OrçaChat.",
+    nome: "Inicial",
+    preco: "R$ 19,99",
+    periodo: "/mês",
+    tagline: "Para quem está começando e faz alguns orçamentos por mês.",
     destaque: false,
-    cta: "Começar grátis",
+    cta: "Assinar o Inicial",
     recursos: [
-      "Orçamentos pelo WhatsApp",
-      "PDF profissional com a sua marca",
+      "20 orçamentos por mês",
+      "Orçamentos pelo WhatsApp e pelo site",
+      "PDF profissional com a sua logo",
       "Link de aprovação para o cliente",
-      "Acesso completo por 7 dias",
-    ],
-  },
-  {
-    nome: "Essencial",
-    preco: "R$ 39",
-    periodo: "/mês",
-    tagline: "Perfeito para pequenos negócios e profissionais autônomos.",
-    destaque: true,
-    cta: "Assinar o Essencial",
-    recursos: [
-      "Tudo da Degustação, sem prazo",
-      "Orçamentos ilimitados",
-      "Vários itens por orçamento",
       "Clientes e serviços salvos",
-      "Painel de controle",
     ],
   },
   {
-    nome: "Premium",
-    preco: "R$ 79",
+    nome: "Profissional",
+    preco: "R$ 49,99",
     periodo: "/mês",
-    tagline: "Para quem quer crescer e organizar o negócio.",
-    destaque: false,
-    cta: "Assinar o Premium",
+    tagline: "Para quem orça quase todo dia e quer suporte por WhatsApp.",
+    destaque: true,
+    cta: "Assinar o Profissional",
     recursos: [
-      "Tudo do Essencial",
-      "Relatórios e métricas avançadas",
-      "Vários usuários na conta",
+      "50 orçamentos por mês",
+      "Tudo do plano Inicial",
+      "Suporte por WhatsApp",
+    ],
+  },
+  {
+    nome: "Ilimitado",
+    preco: "R$ 99,99",
+    periodo: "/mês",
+    tagline: "Sem limites, para quem vive de orçamento.",
+    destaque: false,
+    cta: "Assinar o Ilimitado",
+    recursos: [
+      "Orçamentos ilimitados",
+      "Tudo do plano Profissional",
       "Suporte prioritário",
     ],
   },
@@ -469,7 +468,7 @@ export default function Landing() {
             ))}
           </div>
           <p className="mt-6 text-center text-xs text-tinta-suave">
-            Sem fidelidade · Cancele quando quiser · Todos começam com 7 dias grátis
+            Sem fidelidade · Cancele quando quiser · 7 dias grátis (até 5 orçamentos) para todos
           </p>
         </div>
       </section>
