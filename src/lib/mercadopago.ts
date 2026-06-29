@@ -62,6 +62,86 @@ export async function criarAssinatura(
   }
 }
 
+// Cria um pagamento avulso (1 mês) via PIX usando o Checkout do Mercado Pago.
+// Não é recorrente: ao pagar, liberamos 30 dias; depois a pessoa paga de novo.
+export async function criarPagamentoPix(
+  plano: PlanoKey,
+  payerEmail: string,
+  externalRef: string
+): Promise<{ initPoint: string; prefId: string } | null> {
+  const t = token();
+  if (!t) return null;
+  const planos = await getPlanos();
+  const p = planos[plano];
+  const base = baseUrl();
+  try {
+    const resp = await fetch(`${API}/checkout/preferences`, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${t}` },
+      body: JSON.stringify({
+        items: [
+          {
+            title: `OrçaChat ${p.nome} — 1 mês`,
+            quantity: 1,
+            unit_price: p.preco,
+            currency_id: "BRL",
+          },
+        ],
+        payer: { email: payerEmail },
+        external_reference: externalRef,
+        metadata: { tipo: "pix_mensal", plano, org: externalRef },
+        back_urls: {
+          success: `${base}/assinatura?ok=pix`,
+          pending: `${base}/assinatura?ok=pixpend`,
+          failure: `${base}/assinatura?erro=pix`,
+        },
+        auto_return: "approved",
+        notification_url: `${base}/api/mercadopago`,
+        // só PIX (tira cartão/boleto para virar um botão "PIX")
+        payment_methods: {
+          excluded_payment_types: [{ id: "credit_card" }, { id: "debit_card" }, { id: "ticket" }],
+          installments: 1,
+        },
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!resp.ok) {
+      console.error("MP criarPagamentoPix falhou:", resp.status, await resp.text().catch(() => ""));
+      return null;
+    }
+    const data: any = await resp.json();
+    const initPoint = data?.init_point || data?.sandbox_init_point;
+    if (!initPoint || !data?.id) return null;
+    return { initPoint, prefId: String(data.id) };
+  } catch (e) {
+    console.error("Erro MP criarPagamentoPix:", e);
+    return null;
+  }
+}
+
+// Consulta um pagamento avulso (usado no webhook de "Pagamentos").
+export async function consultarPagamento(
+  paymentId: string
+): Promise<{ status: string; externalRef: string | null; plano: string | null } | null> {
+  const t = token();
+  if (!t) return null;
+  try {
+    const resp = await fetch(`${API}/v1/payments/${paymentId}`, {
+      headers: { authorization: `Bearer ${t}` },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!resp.ok) return null;
+    const d: any = await resp.json();
+    return {
+      status: String(d?.status || ""), // approved | pending | rejected | ...
+      externalRef: d?.external_reference ? String(d.external_reference) : null,
+      plano: d?.metadata?.plano ? String(d.metadata.plano) : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // Consulta uma assinatura (usado no webhook) para saber o status atual.
 export async function consultarAssinatura(
   preapprovalId: string

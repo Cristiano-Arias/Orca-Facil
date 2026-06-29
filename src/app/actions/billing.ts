@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { lerSessao } from "@/lib/auth";
 import { q } from "@/lib/db";
 import { cobrancaAtiva, getPlanos, PLANO_KEYS, PLANO_TESTE, TRIAL_DIAS, type PlanoKey } from "@/lib/billing";
-import { criarAssinatura } from "@/lib/mercadopago";
+import { criarAssinatura, criarPagamentoPix } from "@/lib/mercadopago";
 import { ehDono } from "@/lib/owner";
 
 // Inicia a assinatura de um plano (ou o teste grátis): cria a cobrança no
@@ -33,6 +33,25 @@ export async function assinar(formData: FormData): Promise<void> {
     [plano, init.preapprovalId, trialAte, sessao!.orgId]
   );
   redirect(init.initPoint); // vai para o checkout do Mercado Pago (cadastra o cartão)
+}
+
+// Pagamento avulso de 1 mês via PIX (sem cartão, sem renovação automática).
+export async function pagarPix(formData: FormData): Promise<void> {
+  const sessao = await lerSessao();
+  if (!sessao) redirect("/entrar");
+
+  const plano = String(formData.get("plano") || "") as PlanoKey;
+  const planos = await getPlanos();
+  if (!planos[plano]) redirect("/assinatura?erro=plano");
+
+  if (!cobrancaAtiva()) redirect("/assinatura?erro=desligada");
+
+  const init = await criarPagamentoPix(plano, sessao!.email, sessao!.orgId);
+  if (!init) redirect("/assinatura?erro=indisponivel");
+
+  // guarda o plano escolhido; o acesso é liberado pelo webhook quando o PIX é aprovado
+  await q("UPDATE orcafacil.profile SET plano = $1 WHERE org_id = $2", [plano, sessao!.orgId]);
+  redirect(init.initPoint); // checkout do Mercado Pago com PIX
 }
 
 export async function cancelarAssinatura(): Promise<void> {

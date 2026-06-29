@@ -2,7 +2,7 @@ import { lerSessao } from "@/lib/auth";
 import { getPlanos, PLANO_KEYS, PLANO_TESTE, TRIAL_DIAS, type PlanoKey } from "@/lib/billing";
 import { usoDaConta } from "@/lib/limite";
 import { brl } from "@/lib/proposal-format";
-import { cancelarAssinatura } from "@/app/actions/billing";
+import { cancelarAssinatura, pagarPix } from "@/app/actions/billing";
 import { ehDono } from "@/lib/owner";
 import PlanosGrid, { type PlanoView } from "@/components/planos-grid";
 
@@ -15,6 +15,8 @@ const AVISO: Record<string, { tipo: "ok" | "erro"; texto: string }> = {
   desligada: { tipo: "erro", texto: "A cobrança ainda não foi ativada. Em breve!" },
   indisponivel: { tipo: "erro", texto: "Pagamento indisponível no momento. Tente novamente em instantes." },
   limite: { tipo: "erro", texto: "Você atingiu o limite de orçamentos do seu plano. Escolha um plano maior para continuar." },
+  pix: { tipo: "ok", texto: "PIX aprovado! Seu acesso está liberado por 30 dias. 🎉" },
+  pixpend: { tipo: "ok", texto: "Recebemos seu PIX e estamos aguardando a confirmação. Assim que cair, liberamos 30 dias." },
 };
 
 export default async function AssinaturaPage({ searchParams }: { searchParams: { ok?: string; erro?: string } }) {
@@ -108,6 +110,24 @@ export default async function AssinaturaPage({ searchParams }: { searchParams: {
           selecaoInicial={uso.modo === "ativa" || uso.modo === "trial" ? (uso.plano ?? "teste") : "teste"}
           planoAtivo={uso.modo === "ativa" ? (uso.plano ?? null) : null}
         />
+
+        {/* alternativa: PIX avulso (1 mês, sem cartão) */}
+        <div className="card mt-6 p-5">
+          <h3 className="text-sm font-semibold text-tinta">Prefere pagar no PIX? (sem cartão)</h3>
+          <p className="mt-1 text-xs text-tinta-suave">
+            Pague 1 mês via PIX. O acesso vale 30 dias; depois é só pagar de novo — não renova sozinho.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {PLANO_KEYS.map((k) => (
+              <form key={k} action={pagarPix}>
+                <input type="hidden" name="plano" value={k} />
+                <button className="btn btn-sec w-full">
+                  {planos[k].nome} no PIX · {brl(planos[k].preco)}
+                </button>
+              </form>
+            ))}
+          </div>
+        </div>
 
         {(uso.modo === "ativa" || uso.modo === "trial") && (
           <form action={cancelarAssinatura} className="mt-5">
