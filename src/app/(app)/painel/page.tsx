@@ -2,6 +2,7 @@ import Link from "next/link";
 import { lerSessao } from "@/lib/auth";
 import { uma } from "@/lib/db";
 import WhatsAppCta from "@/components/whatsapp-cta";
+import { situacao, type PerfilAssinatura } from "@/lib/billing";
 
 function brl(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -27,6 +28,14 @@ export default async function PainelPage() {
   ]);
   const recebido = Number(rec?.s ?? 0);
 
+  // situação da assinatura (só aparece quando a cobrança está ligada)
+  const assin = await uma<PerfilAssinatura & { created_at: string }>(
+    `SELECT pr.plano, pr.assinatura_status, pr.assinatura_ate, o.created_at
+       FROM orcafacil.organization o LEFT JOIN orcafacil.profile pr ON pr.org_id = o.id WHERE o.id = $1`,
+    [orgId]
+  );
+  const sit = situacao(assin, assin?.created_at ?? new Date());
+
   const kpis = [
     { rotulo: "Propostas", valor: String(propostas) },
     { rotulo: "Clientes", valor: String(clientes) },
@@ -42,6 +51,19 @@ export default async function PainelPage() {
       </header>
 
       <div className="max-w-5xl px-7 py-6">
+        {sit.modo === "trial" && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <span>⏳ Teste grátis: <b>{sit.dias} dia(s)</b> restante(s). Assine para não perder o acesso.</span>
+            <Link href="/assinatura" className="btn btn-primario btn-sm">Ver planos</Link>
+          </div>
+        )}
+        {sit.modo === "expirado" && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            <span>🔒 Seu teste grátis terminou. Assine um plano para continuar criando orçamentos.</span>
+            <Link href="/assinatura" className="btn btn-primario btn-sm">Assinar agora</Link>
+          </div>
+        )}
+
         <div className="mb-6">
           <WhatsAppCta />
         </div>

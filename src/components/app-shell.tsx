@@ -11,6 +11,7 @@ const NAV = [
   { href: "/clientes", label: "Clientes" },
   { href: "/servicos", label: "Serviços" },
   { href: "/perfil", label: "Meu perfil" },
+  { href: "/assinatura", label: "Assinatura" },
   { href: "/ajuda", label: "Ajuda" },
 ];
 

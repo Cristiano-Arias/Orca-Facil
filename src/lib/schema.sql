@@ -55,6 +55,11 @@ ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS garantia_padrao TEXT;
 ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS prazo_padrao TEXT;
 ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS obs_padrao TEXT;
 ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS onboarded BOOLEAN NOT NULL DEFAULT false;
+-- assinatura / cobrança (Mercado Pago)
+ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS plano TEXT;
+ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS assinatura_status TEXT NOT NULL DEFAULT 'trial';
+ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS mp_preapproval_id TEXT;
+ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS assinatura_ate TIMESTAMPTZ;
 
 CREATE TABLE IF NOT EXISTS orcafacil.client (
   id          TEXT PRIMARY KEY,
