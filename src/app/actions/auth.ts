@@ -40,7 +40,8 @@ export async function cadastrar(_prev: EstadoForm, form: FormData): Promise<Esta
   );
 
   await criarSessao({ userId, orgId, nome, email });
-  redirect("/painel");
+  // novo usuário → assistente de boas-vindas (perguntas essenciais)
+  redirect("/bem-vindo");
 }
 
 export async function entrar(_prev: EstadoForm, form: FormData): Promise<EstadoForm> {

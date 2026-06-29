@@ -127,11 +127,30 @@ function construirItens(c: CamposExtraidos): ItemFinal[] {
 export async function criarProposta(
   orgId: string,
   c: CamposExtraidos,
-  validadePadrao: number
+  validadePadrao: number,
+  opts?: { aplicarPadroes?: boolean }
 ): Promise<ResultadoCriacao> {
   const avisos: string[] = [];
-  const garantia = c.garantia ?? "";
   const itens = construirItens(c);
+
+  // padrões do profissional — preenchem o que faltar (exceto no modo guiado,
+  // onde os campos em branco devem permanecer em branco se o usuário confirmou).
+  const aplicar = opts?.aplicarPadroes !== false;
+  const padrao = aplicar
+    ? await uma<{
+        pagamento_padrao: string | null;
+        garantia_padrao: string | null;
+        prazo_padrao: string | null;
+        obs_padrao: string | null;
+      }>(
+        "SELECT pagamento_padrao, garantia_padrao, prazo_padrao, obs_padrao FROM orcafacil.profile WHERE org_id = $1",
+        [orgId]
+      )
+    : null;
+  const garantia = c.garantia ?? padrao?.garantia_padrao ?? "";
+  const prazo = c.prazo ?? padrao?.prazo_padrao ?? null;
+  const pagamento = c.pagamento ?? padrao?.pagamento_padrao ?? null;
+  const obs = c.obs ?? padrao?.obs_padrao ?? null;
 
   const cli = await acharOuCriarCliente(orgId, c.cliente!, c.telefone);
   if (cli.novo) avisos.push(`Criei o cadastro do cliente ${c.cliente}.`);
@@ -160,12 +179,12 @@ export async function criarProposta(
       numero,
       cli.id,
       itens[0].descricao,
-      c.prazo ?? null,
-      c.pagamento ?? null,
+      prazo,
+      pagamento,
       garantia || null,
       validadeDias,
       desconto,
-      c.obs ?? null,
+      obs,
     ]
   );
   for (const it of itens) {

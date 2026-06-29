@@ -21,6 +21,10 @@ export type PerfilDados = {
   logo_fundo?: string | null;
   logo_formato?: string | null;
   logo_emoji?: string | null;
+  pagamento_padrao?: string | null;
+  garantia_padrao?: string | null;
+  prazo_padrao?: string | null;
+  obs_padrao?: string | null;
 };
 
 function Botao() {
@@ -267,6 +271,32 @@ export default function PerfilForm({ perfil }: { perfil: PerfilDados }) {
           <div className="campo">
             <label>Validade padrão (dias)</label>
             <input name="validade_padrao" type="number" defaultValue={perfil.validade_padrao ?? 7} />
+          </div>
+        </div>
+
+        {/* Padrões dos orçamentos — entram automaticamente em toda proposta */}
+        <div className="mb-2 mt-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="text-sm font-semibold text-tinta">Padrões dos orçamentos</div>
+          <p className="mb-3 text-xs text-tinta-suave">
+            Entram automaticamente em toda proposta (você pode mudar em cada uma). Deixe em branco o que não usa.
+          </p>
+          <div className="campo">
+            <label>Forma de pagamento padrão</label>
+            <input name="pagamento_padrao" defaultValue={perfil.pagamento_padrao ?? ""} placeholder="Ex.: 50% de entrada e 50% na entrega" />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="campo mb-0">
+              <label>Garantia padrão</label>
+              <input name="garantia_padrao" defaultValue={perfil.garantia_padrao ?? ""} placeholder="Ex.: 90 dias" />
+            </div>
+            <div className="campo mb-0">
+              <label>Prazo de execução padrão</label>
+              <input name="prazo_padrao" defaultValue={perfil.prazo_padrao ?? ""} placeholder="Ex.: 5 dias úteis" />
+            </div>
+          </div>
+          <div className="campo mb-0 mt-3">
+            <label>Observação padrão (o que está incluso)</label>
+            <input name="obs_padrao" defaultValue={perfil.obs_padrao ?? ""} placeholder="Ex.: Inclui material e mão de obra" />
           </div>
         </div>
 
