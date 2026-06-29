@@ -1,7 +1,7 @@
 // Integração com o Mercado Pago (Assinaturas / "preapproval").
 // Requer MERCADOPAGO_ACCESS_TOKEN no ambiente. Sem token, as funções
 // devolvem null/erro de forma segura (nada quebra).
-import { PLANOS, type PlanoKey } from "./billing";
+import { getPlanos, TRIAL_DIAS, type PlanoKey } from "./billing";
 
 const API = "https://api.mercadopago.com";
 
@@ -17,26 +17,33 @@ function baseUrl(): string {
 export async function criarAssinatura(
   plano: PlanoKey,
   payerEmail: string,
-  externalRef: string
+  externalRef: string,
+  comTeste = false
 ): Promise<{ initPoint: string; preapprovalId: string } | null> {
   const t = token();
   if (!t) return null;
-  const p = PLANOS[plano];
+  const planos = await getPlanos();
+  const p = planos[plano];
   try {
+    const auto_recurring: Record<string, unknown> = {
+      frequency: 1,
+      frequency_type: "months",
+      transaction_amount: p.preco,
+      currency_id: "BRL",
+    };
+    // teste grátis: cadastra o cartão agora, primeira cobrança só após N dias
+    if (comTeste) {
+      auto_recurring.free_trial = { frequency: TRIAL_DIAS, frequency_type: "days" };
+    }
     const resp = await fetch(`${API}/preapproval`, {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${t}` },
       body: JSON.stringify({
-        reason: `OrçaChat ${p.nome}`,
+        reason: comTeste ? `OrçaChat ${p.nome} (teste grátis)` : `OrçaChat ${p.nome}`,
         external_reference: externalRef,
         payer_email: payerEmail,
         back_url: `${baseUrl()}/assinatura?ok=1`,
-        auto_recurring: {
-          frequency: 1,
-          frequency_type: "months",
-          transaction_amount: p.preco,
-          currency_id: "BRL",
-        },
+        auto_recurring,
         status: "pending",
       }),
       signal: AbortSignal.timeout(15000),

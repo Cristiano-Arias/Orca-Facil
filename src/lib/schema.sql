@@ -60,6 +60,20 @@ ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS plano TEXT;
 ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS assinatura_status TEXT NOT NULL DEFAULT 'trial';
 ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS mp_preapproval_id TEXT;
 ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS assinatura_ate TIMESTAMPTZ;
+-- fim do período de teste grátis (quando há cartão cadastrado via Mercado Pago)
+ALTER TABLE orcafacil.profile ADD COLUMN IF NOT EXISTS trial_ate TIMESTAMPTZ;
+
+-- Configuração dos planos, editável pelo dono no Painel do Dono.
+-- Se um plano não estiver aqui, vale o padrão do código (src/lib/billing.ts).
+CREATE TABLE IF NOT EXISTS orcafacil.plan_config (
+  chave     TEXT PRIMARY KEY,          -- 'inicial' | 'profissional' | 'ilimitado'
+  nome      TEXT NOT NULL,
+  preco     DOUBLE PRECISION NOT NULL,
+  cota      INTEGER,                   -- NULL = ilimitado
+  recursos  JSONB NOT NULL DEFAULT '[]',
+  ordem     INTEGER NOT NULL DEFAULT 0,
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
 CREATE TABLE IF NOT EXISTS orcafacil.client (
   id          TEXT PRIMARY KEY,

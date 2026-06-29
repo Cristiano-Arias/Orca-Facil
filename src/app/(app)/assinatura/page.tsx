@@ -1,14 +1,15 @@
 import { lerSessao } from "@/lib/auth";
-import { PLANOS, TRIAL_DIAS, cobrancaAtiva, type PlanoKey } from "@/lib/billing";
+import { getPlanos, PLANO_KEYS, PLANO_TESTE, TRIAL_DIAS, type PlanoKey } from "@/lib/billing";
 import { usoDaConta } from "@/lib/limite";
 import { brl } from "@/lib/proposal-format";
-import { assinar, cancelarAssinatura } from "@/app/actions/billing";
+import { cancelarAssinatura } from "@/app/actions/billing";
 import { ehDono } from "@/lib/owner";
+import PlanosGrid, { type PlanoView } from "@/components/planos-grid";
 
 export const dynamic = "force-dynamic";
 
 const AVISO: Record<string, { tipo: "ok" | "erro"; texto: string }> = {
-  "1": { tipo: "ok", texto: "Recebemos seu pedido! Assim que o pagamento for confirmado, seu plano é liberado." },
+  "1": { tipo: "ok", texto: "Tudo certo! Seu cartão foi cadastrado. Você tem 7 dias grátis e só é cobrado depois disso." },
   cancelada: { tipo: "ok", texto: "Assinatura cancelada." },
   plano: { tipo: "erro", texto: "Plano inválido." },
   desligada: { tipo: "erro", texto: "A cobrança ainda não foi ativada. Em breve!" },
@@ -16,14 +17,40 @@ const AVISO: Record<string, { tipo: "ok" | "erro"; texto: string }> = {
   limite: { tipo: "erro", texto: "Você atingiu o limite de orçamentos do seu plano. Escolha um plano maior para continuar." },
 };
 
-// destaque do plano "recomendado" (o do meio)
-const RECOMENDADO: PlanoKey = "profissional";
-
 export default async function AssinaturaPage({ searchParams }: { searchParams: { ok?: string; erro?: string } }) {
   const sessao = await lerSessao();
   const uso = await usoDaConta(sessao!.orgId, ehDono(sessao!.email));
+  const planos = await getPlanos();
   const avisoKey = searchParams?.ok || searchParams?.erro;
   const aviso = avisoKey ? AVISO[avisoKey] : null;
+
+  // Card do teste grátis + os 3 planos pagos.
+  const pTeste = planos[PLANO_TESTE];
+  const cards: PlanoView[] = [
+    {
+      key: "teste",
+      nome: "Teste Grátis",
+      precoFmt: "Grátis",
+      precoSub: "por 7 dias",
+      cotaTexto: `Tudo do plano ${pTeste.nome}`,
+      cta: "Começar teste grátis",
+      teste: true,
+      badge: "Comece aqui",
+      recursos: [
+        "7 dias grátis, sem pagar nada",
+        "Pede o cartão (cancele quando quiser)",
+        `Depois, ${brl(pTeste.preco)}/mês (plano ${pTeste.nome})`,
+        "Acesso completo durante o teste",
+      ],
+    },
+    ...PLANO_KEYS.map<PlanoView>((k) => ({
+      key: k,
+      nome: planos[k].nome,
+      precoFmt: brl(planos[k].preco),
+      cotaTexto: planos[k].cota === null ? "Orçamentos ilimitados" : `${planos[k].cota} orçamentos/mês`,
+      recursos: planos[k].recursos,
+    })),
+  ];
 
   return (
     <>
@@ -32,7 +59,7 @@ export default async function AssinaturaPage({ searchParams }: { searchParams: {
         <p className="text-sm text-tinta-suave">Seu plano e formas de continuar usando o OrçaChat</p>
       </header>
 
-      <div className="max-w-5xl px-7 py-6">
+      <div className="max-w-6xl px-7 py-6">
         {aviso && (
           <div
             className={`mb-5 rounded-xl px-4 py-3 text-sm font-medium ${
@@ -53,12 +80,14 @@ export default async function AssinaturaPage({ searchParams }: { searchParams: {
           )}
           {uso.modo === "trial" && (
             <p className="mt-1 text-sm text-tinta-suave">
-              Teste grátis: <b>{uso.dias} dia(s)</b> restante(s) — você já usou <b>{uso.usados} de {uso.limite}</b> orçamentos.
+              Teste grátis: <b>{uso.dias} dia(s)</b> restante(s) — plano{" "}
+              <b>{planos[uso.plano as PlanoKey]?.nome ?? uso.plano}</b>
+              {uso.limite !== null && <> · {uso.usados} de {uso.limite} orçamentos usados este mês</>}.
             </p>
           )}
           {uso.modo === "ativa" && (
             <p className="mt-1 text-sm text-emerald-700">
-              Plano <b>{PLANOS[uso.plano as PlanoKey]?.nome ?? uso.plano}</b> ativo 🎉
+              Plano <b>{planos[uso.plano as PlanoKey]?.nome ?? uso.plano}</b> ativo 🎉
               {uso.limite === null ? (
                 <> — orçamentos ilimitados.</>
               ) : (
@@ -67,63 +96,28 @@ export default async function AssinaturaPage({ searchParams }: { searchParams: {
             </p>
           )}
           {uso.modo === "expirado" && (
-            <p className="mt-1 text-sm text-rose-700">Seu teste grátis terminou. Escolha um plano abaixo para continuar.</p>
+            <p className="mt-1 text-sm text-rose-700">
+              Para criar orçamentos, comece seu teste grátis de 7 dias ou escolha um plano abaixo.
+            </p>
           )}
         </div>
 
-        {/* planos */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {(Object.keys(PLANOS) as PlanoKey[]).map((k) => {
-            const p = PLANOS[k];
-            const ativo = uso.modo === "ativa" && uso.plano === k;
-            const destaque = k === RECOMENDADO;
-            return (
-              <div key={k} className={`card relative flex flex-col p-6 ${destaque ? "ring-2 ring-marca" : ""}`}>
-                {destaque && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-marca px-3 py-0.5 text-xs font-semibold text-white">
-                    Mais escolhido
-                  </span>
-                )}
-                <h3 className="font-display text-xl font-bold text-tinta">{p.nome}</h3>
-                <div className="mt-1 flex items-end gap-1">
-                  <span className="font-display text-3xl font-bold text-tinta">{brl(p.preco)}</span>
-                  <span className="mb-1 text-sm text-tinta-suave">/mês</span>
-                </div>
-                <div className="mt-1 text-sm font-medium text-marca">
-                  {p.cota === null ? "Orçamentos ilimitados" : `${p.cota} orçamentos/mês`}
-                </div>
-                <ul className="mt-4 flex-1 space-y-2 text-sm text-tinta">
-                  {p.recursos.map((r) => (
-                    <li key={r} className="flex items-start gap-2">
-                      <span className="text-marca">✓</span>
-                      <span>{r}</span>
-                    </li>
-                  ))}
-                </ul>
-                {ativo ? (
-                  <div className="btn btn-sec mt-6 w-full cursor-default">Plano atual</div>
-                ) : (
-                  <form action={assinar} className="mt-6">
-                    <input type="hidden" name="plano" value={k} />
-                    <button className={`btn w-full ${destaque ? "btn-primario" : "btn-sec"}`}>
-                      Assinar {p.nome}
-                    </button>
-                  </form>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        {/* planos (seleção visual no cliente) */}
+        <PlanosGrid
+          planos={cards}
+          selecaoInicial={uso.modo === "ativa" || uso.modo === "trial" ? (uso.plano ?? "teste") : "teste"}
+          planoAtivo={uso.modo === "ativa" ? (uso.plano ?? null) : null}
+        />
 
-        {uso.modo === "ativa" && (
+        {(uso.modo === "ativa" || uso.modo === "trial") && (
           <form action={cancelarAssinatura} className="mt-5">
             <button className="text-sm text-tinta-suave underline hover:text-rose-600">Cancelar assinatura</button>
           </form>
         )}
 
         <p className="mt-6 text-xs text-tinta-suave">
-          Pagamento processado com segurança pelo Mercado Pago. A cota de orçamentos não acumula — zera no início de cada mês.
-          {!cobrancaAtiva() && <> O teste grátis é de {TRIAL_DIAS} dias.</>}
+          Pagamento processado com segurança pelo Mercado Pago. No teste grátis o cartão é cadastrado mas você só é
+          cobrado após {TRIAL_DIAS} dias — cancele antes e não paga nada. A cota de orçamentos não acumula (zera todo mês).
         </p>
       </div>
     </>

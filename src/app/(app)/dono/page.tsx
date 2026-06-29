@@ -4,6 +4,8 @@ import { lerSessao } from "@/lib/auth";
 import { q } from "@/lib/db";
 import { ehDono } from "@/lib/owner";
 import { brl } from "@/lib/proposal-format";
+import { getPlanos, PLANO_KEYS } from "@/lib/billing";
+import { salvarPlanos } from "@/app/actions/billing";
 import DonoContas, { type ContaDono } from "@/components/dono-contas";
 
 export const dynamic = "force-dynamic";
@@ -17,9 +19,11 @@ function n(v: unknown) {
   return Number(v ?? 0) || 0;
 }
 
-export default async function PainelDono({ searchParams }: { searchParams: { p?: string } }) {
+export default async function PainelDono({ searchParams }: { searchParams: { p?: string; ok?: string } }) {
   const sessao = await lerSessao();
   if (!ehDono(sessao?.email)) notFound(); // só o dono
+
+  const planos = await getPlanos();
 
   const periodo = searchParams?.p === "7" ? 7 : searchParams?.p === "tudo" ? 0 : 30;
   const desde = periodo === 0 ? new Date("2000-01-01") : new Date(Date.now() - periodo * 864e5);
@@ -152,6 +156,55 @@ export default async function PainelDono({ searchParams }: { searchParams: { p?:
             ))}
           </div>
         </div>
+
+        {/* editar planos e preços */}
+        <form action={salvarPlanos} className="card mb-6 p-5">
+          <div className="text-sm font-semibold text-tinta">Planos e preços</div>
+          <p className="mt-1 text-xs text-tinta-suave">
+            Altere o nome, o preço e o limite de orçamentos por mês de cada plano. Vale na hora para novas assinaturas.
+          </p>
+          {searchParams?.ok === "planos" && (
+            <div className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+              Planos salvos! ✅
+            </div>
+          )}
+          <div className="mt-4 space-y-4">
+            {PLANO_KEYS.map((k) => (
+              <div key={k} className="grid items-end gap-3 border-t border-slate-100 pt-4 sm:grid-cols-12">
+                <label className="text-sm sm:col-span-4">
+                  <span className="text-tinta-suave">Nome</span>
+                  <input name={`nome_${k}`} defaultValue={planos[k].nome} className="input mt-1 w-full" />
+                </label>
+                <label className="text-sm sm:col-span-3">
+                  <span className="text-tinta-suave">Preço (R$/mês)</span>
+                  <input
+                    name={`preco_${k}`}
+                    defaultValue={planos[k].preco.toFixed(2).replace(".", ",")}
+                    inputMode="decimal"
+                    className="input mt-1 w-full"
+                  />
+                </label>
+                <label className="text-sm sm:col-span-3">
+                  <span className="text-tinta-suave">Orçamentos/mês</span>
+                  <input
+                    name={`cota_${k}`}
+                    defaultValue={planos[k].cota ?? ""}
+                    inputMode="numeric"
+                    placeholder="ilimitado"
+                    className="input mt-1 w-full"
+                  />
+                </label>
+                <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                  <input type="checkbox" name={`ilimitado_${k}`} value="1" defaultChecked={planos[k].cota === null} />
+                  Ilimitado
+                </label>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4">
+            <button className="btn btn-primario">Salvar planos</button>
+          </div>
+        </form>
 
         {/* tabela interativa */}
         <DonoContas contas={contas} />

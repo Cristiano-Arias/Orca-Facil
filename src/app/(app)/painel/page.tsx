@@ -82,7 +82,20 @@ export default async function PainelPage() {
           ))}
         </div>
 
-        {propostas === 0 ? (
+        {uso.modo === "expirado" ? (
+          <div className="card p-6">
+            <h3 className="text-lg font-semibold text-tinta">Comece seu teste grátis 🎁</h3>
+            <p className="mt-2 max-w-prose text-sm leading-relaxed text-tinta-suave">
+              Para criar orçamentos, comece o teste grátis de 7 dias. Você cadastra o cartão, usa tudo sem pagar
+              durante o teste e só é cobrado depois — cancele quando quiser.
+            </p>
+            <div className="mt-4">
+              <Link href="/assinatura" className="btn btn-primario">
+                Começar teste grátis de 7 dias
+              </Link>
+            </div>
+          </div>
+        ) : propostas === 0 ? (
           <div className="card p-6">
             <h3 className="text-lg font-semibold text-tinta">Bem-vindo ao OrçaChat 👋</h3>
             <p className="mt-2 max-w-prose text-sm leading-relaxed text-tinta-suave">

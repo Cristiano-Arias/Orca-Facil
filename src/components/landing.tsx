@@ -92,7 +92,7 @@ const COMECAR = [
   {
     icone: "⚡",
     titulo: "Crie sua conta",
-    texto: "Cadastro rápido, em 1 minuto e sem cartão para começar. É só e-mail e senha.",
+    texto: "Cadastro rápido em 1 minuto, só com e-mail e senha. Depois é só começar o teste grátis de 7 dias.",
   },
   {
     icone: "🎨",
@@ -107,8 +107,21 @@ const COMECAR = [
 ];
 
 // PLANOS exibidos na página de vendas. Os valores devem bater com src/lib/billing.ts.
-// Todos começam com 7 dias grátis (até 5 orçamentos) — destacado no rodapé da seção.
 const PLANOS = [
+  {
+    nome: "Teste Grátis",
+    preco: "Grátis",
+    periodo: "7 dias",
+    tagline: "Experimente o OrçaChat completo por 7 dias. Pede cartão; cancele quando quiser.",
+    destaque: true,
+    cta: "Começar teste grátis",
+    recursos: [
+      "7 dias grátis, sem pagar nada",
+      "Acesso completo a tudo",
+      "Depois, R$ 19,99/mês (plano Inicial)",
+      "Cancele antes e não paga nada",
+    ],
+  },
   {
     nome: "Inicial",
     preco: "R$ 19,99",
@@ -206,7 +219,7 @@ export default function Landing() {
                 Ver como funciona
               </a>
             </div>
-            <p className="mt-3 text-sm text-tinta-suave">Grátis para começar · Sem cartão de crédito</p>
+            <p className="mt-3 text-sm text-tinta-suave">7 dias grátis · Cancele quando quiser</p>
           </div>
 
           {/* Mockup de conversa no WhatsApp */}
@@ -433,7 +446,7 @@ export default function Landing() {
             <h2 className="font-display text-3xl font-bold text-tinta sm:text-4xl">Planos</h2>
             <p className="mt-3 text-tinta-suave">Comece grátis. Escolha quando quiser crescer.</p>
           </div>
-          <div className="mt-10 grid items-stretch gap-6 md:grid-cols-3">
+          <div className="mt-10 grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {PLANOS.map((p) => (
               <div
                 key={p.nome}
@@ -441,7 +454,7 @@ export default function Landing() {
               >
                 {p.destaque && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-marca px-3 py-1 text-xs font-bold text-white">
-                    Mais popular
+                    Comece aqui
                   </span>
                 )}
                 <h3 className="font-display text-xl font-bold text-tinta">{p.nome}</h3>
@@ -468,7 +481,7 @@ export default function Landing() {
             ))}
           </div>
           <p className="mt-6 text-center text-xs text-tinta-suave">
-            Sem fidelidade · Cancele quando quiser · 7 dias grátis (até 5 orçamentos) para todos
+            Sem fidelidade · Cancele quando quiser · 7 dias grátis para todos
           </p>
         </div>
       </section>
