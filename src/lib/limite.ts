@@ -2,7 +2,7 @@
 // A cota NÃO acumula — zera no início de cada mês. O teste grátis dá acesso
 // ao plano escolhido durante os 7 dias (mesma cota do plano).
 import { uma } from "./db";
-import { situacao, getPlanos, TRIAL_COTA, type PerfilAssinatura, type PlanoKey } from "./billing";
+import { situacao, getPlanos, TRIAL_COTA, TRIAL_DIAS, type PerfilAssinatura, type PlanoKey } from "./billing";
 
 export type Uso = {
   modo: "livre" | "trial" | "ativa" | "expirado";
@@ -15,12 +15,21 @@ export type Uso = {
   jaIniciou?: boolean; // já começou um teste/assinatura alguma vez (para a mensagem certa)
 };
 
-// Orçamentos criados no mês corrente.
+// Orçamentos criados no mês corrente (planos pagos).
 async function contarMes(orgId: string): Promise<number> {
   const row = await uma<{ n: string }>(
     `SELECT count(*) AS n FROM orcafacil.proposal
       WHERE org_id = $1 AND created_at >= date_trunc('month', now())`,
     [orgId]
+  );
+  return Number(row?.n ?? 0);
+}
+
+// Orçamentos criados a partir de uma data (usado no teste grátis: conta só os do período do teste).
+async function contarDesde(orgId: string, desde: Date): Promise<number> {
+  const row = await uma<{ n: string }>(
+    "SELECT count(*) AS n FROM orcafacil.proposal WHERE org_id = $1 AND created_at >= $2",
+    [orgId, desde.toISOString()]
   );
   return Number(row?.n ?? 0);
 }
@@ -45,10 +54,13 @@ export async function usoDaConta(orgId: string, ehDono = false): Promise<Uso> {
   }
 
   const plano = sit.plano as PlanoKey;
-  const usados = await contarMes(orgId);
 
-  // teste grátis: amostra de até TRIAL_COTA orçamentos (não usa a cota do plano)
+  // teste grátis: conta só os orçamentos feitos DURANTE o teste, até TRIAL_COTA.
+  // O início do teste é o fim (trial_ate) menos a duração (TRIAL_DIAS).
   if (sit.modo === "trial") {
+    const fim = perfil?.trial_ate ? new Date(perfil.trial_ate).getTime() : Date.now();
+    const inicio = new Date(fim - TRIAL_DIAS * 864e5);
+    const usados = await contarDesde(orgId, inicio);
     return {
       modo: "trial",
       plano,
@@ -60,9 +72,10 @@ export async function usoDaConta(orgId: string, ehDono = false): Promise<Uso> {
     };
   }
 
-  // ativa: usa a cota do plano contratado
+  // ativa: usa a cota do plano contratado, contando o mês corrente
   const planos = await getPlanos();
   const cota = planos[plano]?.cota ?? null;
+  const usados = await contarMes(orgId);
   return {
     modo: "ativa",
     plano,

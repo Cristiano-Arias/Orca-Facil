@@ -91,11 +91,11 @@ export async function criarPagamentoPix(
         external_reference: externalRef,
         metadata: { tipo: "pix_mensal", plano, org: externalRef },
         back_urls: {
-          success: `${base}/assinatura?ok=pix`,
-          pending: `${base}/assinatura?ok=pixpend`,
+          // PIX costuma voltar como "processando": quem confirma o acesso é o webhook.
+          success: `${base}/assinatura?ok=pixproc`,
+          pending: `${base}/assinatura?ok=pixproc`,
           failure: `${base}/assinatura?erro=pix`,
         },
-        auto_return: "approved",
         notification_url: `${base}/api/mercadopago`,
         // só PIX (tira cartão/boleto para virar um botão "PIX")
         payment_methods: {

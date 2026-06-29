@@ -15,8 +15,11 @@ const AVISO: Record<string, { tipo: "ok" | "erro"; texto: string }> = {
   desligada: { tipo: "erro", texto: "A cobrança ainda não foi ativada. Em breve!" },
   indisponivel: { tipo: "erro", texto: "Pagamento indisponível no momento. Tente novamente em instantes." },
   limite: { tipo: "erro", texto: "Você atingiu o limite de orçamentos do seu plano. Escolha um plano maior para continuar." },
-  pix: { tipo: "ok", texto: "PIX aprovado! Seu acesso está liberado por 30 dias. 🎉" },
-  pixpend: { tipo: "ok", texto: "Recebemos seu PIX e estamos aguardando a confirmação. Assim que cair, liberamos 30 dias." },
+  pixproc: {
+    tipo: "ok",
+    texto:
+      "Estamos confirmando seu pagamento. Assim que o PIX cair, seu acesso é liberado por 30 dias — atualize esta página em instantes.",
+  },
 };
 
 export default async function AssinaturaPage({ searchParams }: { searchParams: { ok?: string; erro?: string } }) {
