@@ -205,12 +205,12 @@ export default function Landing() {
               Para profissionais autônomos e MEIs
             </span>
             <h1 className="mt-4 font-display text-4xl font-bold leading-[1.1] text-tinta sm:text-5xl">
-              Orçamentos profissionais, <span className="text-marca">direto do seu WhatsApp</span>.
+              Orçamentos profissionais, <span className="text-marca">direto do seu WhatsApp</span> em segundos.
             </h1>
             <p className="mt-4 max-w-xl text-lg text-tinta-suave">
-              Mande os dados do serviço numa mensagem. O OrçaChat monta a proposta, gera o{" "}
-              <strong className="text-tinta">PDF profissional</strong> e te devolve pronto para enviar ao cliente —
-              tudo sem sair do WhatsApp.
+              Mande os dados do serviço numa mensagem. O OrçaChat monta a{" "}
+              <strong className="text-tinta">proposta profissional em arquivo ou link</strong> para enviar ao cliente
+              em segundos — tudo sem sair do WhatsApp.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link href="/cadastrar" className="btn btn-primario px-6 py-3 text-base">
@@ -231,26 +231,40 @@ export default function Landing() {
                   <div className="grid h-8 w-8 place-items-center rounded-full bg-white/20 text-sm font-bold">O</div>
                   <div className="text-sm font-semibold">OrçaChat</div>
                 </div>
-                <div className="space-y-2 px-3 py-4 text-[13px]">
-                  <div className="ml-auto max-w-[80%] rounded-2xl rounded-tr-sm bg-[#dcf8c6] px-3 py-2 text-slate-800 shadow-sm">
-                    Orçamento pra Maria: pintura 80 m² a R$ 28 o metro, prazo 5 dias 👍
+                <div className="space-y-2.5 px-3 py-4 text-[13px]">
+                  {/* 4 exemplos de serviço, de 4 tipos de profissionais — com vários itens e pagamento */}
+                  <div className="ml-auto max-w-[88%] rounded-2xl rounded-tr-sm bg-[#dcf8c6] px-3 py-2 text-slate-800 shadow-sm">
+                    🎨 <strong>Pintor</strong>: pintura 80 m² (R$ 28/m²) + massa corrida 80 m² (R$ 12/m²)
+                    <br />💳 50% de entrada e 50% na entrega
                   </div>
-                  <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-slate-800 shadow-sm">
-                    ✅ Orçamento <strong>ORC-1042</strong> criado!
-                    <br />
-                    👤 Maria · 🎨 Pintura — 80 m²
-                    <br />
-                    💰 Total: <strong>R$ 2.240,00</strong>
+                  <div className="ml-auto max-w-[88%] rounded-2xl rounded-tr-sm bg-[#dcf8c6] px-3 py-2 text-slate-800 shadow-sm">
+                    ⚡ <strong>Eletricista</strong>: 6 tomadas (R$ 90) + quadro de luz (R$ 400) + 3 pontos de luz (R$ 70)
+                    <br />💳 À vista no PIX
                   </div>
-                  <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-white px-2 py-2 text-slate-800 shadow-sm">
+                  <div className="ml-auto max-w-[88%] rounded-2xl rounded-tr-sm bg-[#dcf8c6] px-3 py-2 text-slate-800 shadow-sm">
+                    🪚 <strong>Marceneiro</strong>: 2 portas planejadas (R$ 1.200) + painel ripado (R$ 800)
+                    <br />💳 3x no cartão
+                  </div>
+                  <div className="ml-auto max-w-[88%] rounded-2xl rounded-tr-sm bg-[#dcf8c6] px-3 py-2 text-slate-800 shadow-sm">
+                    ❄️ <strong>Climatização</strong>: instalação split 12.000 BTUs (R$ 450) + limpeza (R$ 150)
+                    <br />💳 PIX ou cartão em até 2x
+                  </div>
+                  <div className="max-w-[88%] rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-slate-800 shadow-sm">
+                    ✅ Prontinho! Montei <strong>4 orçamentos profissionais</strong>, já com itens, total e pagamento. 👇
+                  </div>
+                  <div className="max-w-[88%] rounded-2xl rounded-tl-sm bg-white px-2 py-2 text-slate-800 shadow-sm">
                     <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-2">
                       <div className="grid h-9 w-9 place-items-center rounded-md bg-rose-100 text-rose-600">PDF</div>
                       <div className="leading-tight">
-                        <div className="font-semibold">Orçamento ORC-1042.pdf</div>
-                        <div className="text-[11px] text-slate-500">Proposta profissional · 1 pág.</div>
+                        <div className="font-semibold">Orçamento.pdf</div>
+                        <div className="text-[11px] text-slate-500">com a sua logo · 1 pág.</div>
                       </div>
                     </div>
-                    <div className="mt-1 text-[11px] text-slate-500">📄 Pronto para enviar ao cliente</div>
+                    <div className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-slate-50 p-2">
+                      <span className="text-marca">🔗</span>
+                      <span className="text-[12px] text-slate-600">Link para o cliente aprovar online</span>
+                    </div>
+                    <div className="mt-1 text-[11px] text-slate-500">📲 Pronto para enviar — sem sair do WhatsApp</div>
                   </div>
                 </div>
               </div>
