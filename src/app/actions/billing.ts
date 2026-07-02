@@ -35,6 +35,33 @@ export async function assinar(formData: FormData): Promise<void> {
   redirect(init.initPoint); // vai para o checkout do Mercado Pago (cadastra o cartão)
 }
 
+// Teste grátis SEM cartão: libera 7 dias na hora (até TRIAL_COTA orçamentos).
+// Ao fim, a conta expira e a pessoa escolhe um plano — nada é cobrado.
+export async function comecarTeste(): Promise<void> {
+  const sessao = await lerSessao();
+  if (!sessao) redirect("/entrar");
+  // sem cobrança ligada, tudo já é livre
+  if (!cobrancaAtiva()) redirect("/painel");
+
+  // não reinicia um teste/assinatura que já está ativo
+  const atual = await q<{ assinatura_status: string | null; assinatura_ate: string | null }>(
+    "SELECT assinatura_status, assinatura_ate FROM orcafacil.profile WHERE org_id = $1",
+    [sessao!.orgId]
+  );
+  const ativo =
+    atual[0]?.assinatura_status === "ativa" &&
+    atual[0]?.assinatura_ate &&
+    new Date(atual[0].assinatura_ate).getTime() > Date.now();
+  if (ativo) redirect("/painel");
+
+  const ate = new Date(Date.now() + TRIAL_DIAS * 864e5).toISOString();
+  await q(
+    "UPDATE orcafacil.profile SET assinatura_status = 'ativa', assinatura_ate = $1, trial_ate = $1, plano = $2 WHERE org_id = $3",
+    [ate, PLANO_TESTE, sessao!.orgId]
+  );
+  redirect("/painel?ok=teste");
+}
+
 // Pagamento avulso de 1 mês via PIX (sem cartão, sem renovação automática).
 export async function pagarPix(formData: FormData): Promise<void> {
   const sessao = await lerSessao();

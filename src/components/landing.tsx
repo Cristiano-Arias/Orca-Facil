@@ -112,7 +112,7 @@ const PLANOS = [
     nome: "Teste Grátis",
     preco: "Grátis",
     periodo: "7 dias",
-    tagline: "7 dias grátis. Pede cartão; depois vira Inicial. Cancele quando quiser.",
+    tagline: "7 dias grátis e sem cartão. Depois escolha um plano para continuar.",
     destaque: true,
     cta: "Começar teste grátis",
     recursos: [
@@ -143,7 +143,7 @@ const PLANOS = [
     preco: "R$ 49,99",
     periodo: "/mês",
     tagline: "Para quem orça quase todo dia e quer suporte por WhatsApp.",
-    destaque: true,
+    destaque: false,
     cta: "Assinar o Profissional",
     recursos: [
       "50 orçamentos por mês",

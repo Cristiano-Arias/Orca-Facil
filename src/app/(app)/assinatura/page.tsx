@@ -36,7 +36,7 @@ export default async function AssinaturaPage({ searchParams }: { searchParams: {
       key: "teste",
       nome: "Teste Grátis",
       precoFmt: "Grátis",
-      precoSub: "por 7 dias",
+      precoSub: "7 dias · sem cartão",
       cotaTexto: "Até 5 orçamentos",
       cta: "Começar teste grátis",
       teste: true,
@@ -87,7 +87,7 @@ export default async function AssinaturaPage({ searchParams }: { searchParams: {
           {uso.modo === "trial" && (
             <p className="mt-1 text-sm text-tinta-suave">
               Teste grátis: <b>{uso.dias} dia(s)</b> restante(s) — você usou <b>{uso.usados} de {uso.limite}</b> orçamentos.
-              {" "}Depois vira o plano {planos.inicial.nome}.
+              {" "}Depois é só escolher um plano para continuar.
             </p>
           )}
           {uso.modo === "ativa" && (
@@ -139,8 +139,8 @@ export default async function AssinaturaPage({ searchParams }: { searchParams: {
         )}
 
         <p className="mt-6 text-xs text-tinta-suave">
-          Pagamento processado com segurança pelo Mercado Pago. No teste grátis o cartão é cadastrado mas você só é
-          cobrado após {TRIAL_DIAS} dias — cancele antes e não paga nada. A cota de orçamentos não acumula (zera todo mês).
+          O teste grátis é <b>sem cartão</b> e dura {TRIAL_DIAS} dias (até 5 orçamentos); depois é só escolher um plano.
+          Pagamentos processados com segurança pelo Mercado Pago. A cota de orçamentos não acumula (zera todo mês).
         </p>
       </div>
     </>

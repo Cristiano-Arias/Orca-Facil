@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { assinar } from "@/app/actions/billing";
+import { assinar, comecarTeste } from "@/app/actions/billing";
 
 export type PlanoView = {
   key: string;
@@ -66,13 +66,14 @@ export default function PlanosGrid({
               <div className="btn btn-sec mt-6 w-full cursor-default">Plano atual</div>
             ) : (
               // o form só dispara quando o profissional confirma no botão.
+              // teste grátis = sem cartão (comecarTeste); planos pagos = checkout (assinar).
               // stopPropagation: o clique no botão não deve ser "engolido" pela seleção do card.
-              <form action={assinar} className="mt-6" onClick={(e) => e.stopPropagation()}>
-                {p.teste ? (
-                  <input type="hidden" name="teste" value="1" />
-                ) : (
-                  <input type="hidden" name="plano" value={p.key} />
-                )}
+              <form
+                action={p.teste ? comecarTeste : assinar}
+                className="mt-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {!p.teste && <input type="hidden" name="plano" value={p.key} />}
                 <button type="submit" className={`btn w-full ${escolhido ? "btn-primario" : "btn-sec"}`}>
                   {p.cta ?? `Assinar ${p.nome}`}
                 </button>

@@ -4,6 +4,7 @@ import { uma } from "@/lib/db";
 import WhatsAppCta from "@/components/whatsapp-cta";
 import { usoDaConta } from "@/lib/limite";
 import { ehDono } from "@/lib/owner";
+import { comecarTeste } from "@/app/actions/billing";
 
 function brl(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -98,14 +99,12 @@ export default async function PainelPage() {
               <>
                 <h3 className="text-lg font-semibold text-tinta">Comece seu teste grátis 🎁</h3>
                 <p className="mt-2 max-w-prose text-sm leading-relaxed text-tinta-suave">
-                  Para criar orçamentos, comece o teste grátis de 7 dias (até 5 orçamentos). Você cadastra o cartão,
-                  usa sem pagar durante o teste e só é cobrado depois — cancele quando quiser.
+                  Ative o teste grátis de 7 dias (até 5 orçamentos). É <b>grátis e sem cartão</b> — depois é só
+                  escolher um plano se quiser continuar.
                 </p>
-                <div className="mt-4">
-                  <Link href="/assinatura" className="btn btn-primario">
-                    Começar teste grátis de 7 dias
-                  </Link>
-                </div>
+                <form action={comecarTeste} className="mt-4">
+                  <button className="btn btn-primario">Começar teste grátis de 7 dias</button>
+                </form>
               </>
             )}
           </div>
